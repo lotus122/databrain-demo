@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="DataBrain 数据源管理演示">
+<title>DataBrain · 数据源管理演示</title>
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;rect width='100' height='100' rx='20' fill='%237C3AED'/&gt;&lt;text x='50' y='68' font-size='60' font-weight='700' text-anchor='middle' fill='white' font-family='sans-serif'&gt;D&lt;/text&gt;&lt;/svg&gt;">
+<style>
+:root{--brand:#7C3AED;--brand-dark:#1E1B4B;--brand-light:#EDE9FE;--brand-lighter:#F5F3FF;--ink:#111827;--ink-2:#1F2937;--muted:#6B7280;--muted-2:#9CA3AF;--border:#E5E7EB;--border-2:#D1D5DB;--bg:#F3F4F6;--bg-2:#F9FAFB;--white:#FFF;--success:#10B981;--success-light:#ECFDF5;--success-dark:#059669;--blue:#3B82F6;--orange:#F97316;--red:#EF4444}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5}
+.app{display:flex;flex-direction:column;height:100vh}
+.topbar{height:48px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:50}
+.topbar-logo{width:28px;height:28px;border-radius:8px;background:var(--brand);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.topbar-brand{font-weight:700;font-size:14px;margin-right:12px}
+.topbar-sep{width:1px;height:18px;background:var(--border)}
+.topbar-page{font-size:13px;font-weight:600;color:var(--ink-2)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.table-badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:12px;background:var(--success-light);color:var(--success)}
+.topbar-avatar{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.body-area{display:flex;flex:1;overflow:hidden}
+.sidebar{width:180px;background:var(--white);border-right:1px solid var(--border);padding:12px 8px;flex-shrink:0;overflow-y:auto}
+.nav-label{font-size:10px;font-weight:600;color:var(--muted-2);text-transform:uppercase;letter-spacing:.05em;padding:8px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:13px;color:var(--ink-2);margin-bottom:2px;cursor:pointer}
+.nav-item.active{background:var(--brand-light);color:var(--brand);font-weight:600}
+.nav-item .icon{font-size:15px;width:18px;text-align:center}
+.nav-item .badge{width:16px;height:16px;border-radius:50%;background:var(--orange);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:auto}
+.sidebar-divider{height:1px;background:var(--border);margin:4px 8px}
+.history-title{font-size:10px;font-weight:600;color:var(--muted-2);padding:8px 10px 4px}
+.history-item{font-size:12px;color:var(--muted);padding:4px 10px;border-radius:6px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.prog-track{position:absolute;top:0;left:0;right:0;height:3px;background:var(--border);z-index:40}
+.prog-fill{height:100%;width:0%;background:var(--brand);transition:width .3s linear}
+.controls{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;z-index:30}
+.ctrl-btn{background:var(--white);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.ctrl-btn:hover{background:var(--brand-lighter);border-color:var(--brand);color:var(--brand)}
+.step-ind{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.step-ind .cur{color:var(--brand)}
+.content-area{flex:1;overflow-y:auto;padding:16px 20px;position:relative;background:var(--bg)}
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.page-title{font-size:18px;font-weight:700;display:flex;align-items:center;gap:6px}
+.btn-primary{display:flex;align-items:center;gap:4px;background:var(--brand);color:#fff;font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;transition:all .2s}
+.btn-primary.hl{box-shadow:0 0 0 3px rgba(124,58,237,.25);transform:scale(1.05)}
+.upload-section{background:var(--white);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.upload-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.upload-desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.upload-features{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.feature-badge{font-size:11px;color:var(--success-dark);background:var(--success-light);padding:3px 8px;border-radius:6px;border:1px solid #A7F3D0}
+.dropzone{border:2px dashed var(--border-2);border-radius:12px;padding:20px;text-align:center;background:var(--bg-2)}
+.dropzone-icon{font-size:24px;margin-bottom:6px}
+.dropzone-text{font-size:12px;color:var(--muted)}
+.dropzone-link{font-size:12px;color:var(--brand);font-weight:600}
+.upload-tip{font-size:11px;color:var(--muted);margin-top:8px}
+.clear-link{font-size:11px;color:var(--red);margin-top:8px;display:inline-block}
+.table-list{background:var(--white);border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.table-list-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-list-title{font-size:14px;font-weight:700}
+.table-list-count{font-size:12px;color:var(--muted)}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:8px 12px;background:var(--bg-2);border-bottom:1px solid var(--border);white-space:nowrap}
+.data-table td{font-size:12px;color:var(--ink-2);padding:10px 12px;border-bottom:1px solid var(--border)}
+.data-table tr.new-row{background:var(--success-light)}
+.data-table tr.new-row td:first-child{border-left:3px solid var(--success)}
+.action-link{font-size:11px;color:var(--blue);cursor:pointer}
+.action-link.danger{color:var(--red)}
+.action-link.hl{background:var(--brand-light);padding:2px 6px;border-radius:4px;font-weight:600}
+.toast{position:fixed;right:20px;bottom:20px;background:var(--success);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(16,185,129,.3);opacity:0;transform:translateY(10px);transition:all .4s;z-index:150}
+.toast.show{opacity:1;transform:translateY(0)}
+.cursor{position:fixed;z-index:9999;pointer-events:none;width:24px;height:24px;opacity:0;transition:opacity .3s}
+.cursor.vis{opacity:1}
+.cursor svg{filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+.cursor .ring{position:absolute;top:50%;left:50%;width:36px;height:36px;border:2.5px solid var(--brand);border-radius:50%;transform:translate(-50%,-50%) scale(0);opacity:0}
+.cursor.click .ring{animation:cr .6s ease}
+@keyframes cr{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}100%{transform:translate(-50%,-50%) scale(2.5);opacity:0}}
+.modal-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-ov.show{opacity:1;pointer-events:auto}
+.modal{background:var(--white);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.15);transform:scale(.9);transition:transform .3s;max-height:85vh;display:flex;flex-direction:column}
+.modal-ov.show .modal{transform:scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-title{font-size:15px;font-weight:700}
+.modal-subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+.modal-close{font-size:18px;color:var(--muted-2);cursor:pointer;border:none;background:transparent}
+.modal-body{padding:16px 20px;overflow-y:auto;flex:1}
+.modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0}
+.modal-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none}
+.modal-btn.cancel{background:var(--bg-2);color:var(--ink-2)}
+.modal-btn.confirm{background:var(--brand);color:#fff}
+.modal-btn.confirm.hl{box-shadow:0 0 0 3px rgba(124,58,237,.25);transform:scale(1.05)}
+.modal-add-link{font-size:12px;color:var(--brand);font-weight:600;cursor:pointer;border:none;background:transparent;margin-right:auto}
+.preview-table{width:100%;border-collapse:collapse}
+.preview-table th{font-size:11px;font-weight:600;text-align:left;padding:8px 10px;background:var(--bg-2);border-bottom:1px solid var(--border);white-space:nowrap}
+.preview-table .ct{font-size:10px;color:var(--muted-2);font-weight:400;display:block;margin-top:2px}
+.preview-table td{font-size:12px;color:var(--ink-2);padding:7px 10px;border-bottom:1px solid var(--border);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.type-badge{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:500}
+.type-badge.dec{background:#FEF3C7;color:#92400E}
+.form-group{margin-bottom:12px}
+.form-label{font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:5px}
+.form-input{width:100%;border:1.5px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;transition:all .2s}
+.form-input.hl{border-color:var(--brand);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-textarea{width:100%;border:1.5px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:12px;font-family:inherit;min-height:50px;resize:vertical}
+.type-select{border:1.5px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:12px;font-family:inherit;background:var(--white);width:100%}
+.field-row{display:grid;grid-template-columns:1fr 1.2fr 1.5fr 32px;gap:8px;margin-bottom:6px;align-items:center}
+.field-row .form-input,.field-row .type-select{padding:6px 8px;font-size:12px}
+.field-del{font-size:14px;color:var(--muted-2);cursor:pointer;border:none;background:transparent}
+.field-header{display:grid;grid-template-columns:1fr 1.2fr 1.5fr 32px;gap:8px;margin-bottom:6px;font-size:11px;font-weight:600;color:var(--muted)}
+.input-bar{display:flex;align-items:center;gap:10px;background:var(--white);border-top:1px solid var(--border);padding:10px 16px;flex-shrink:0}
+.input-pill{display:flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--border);border-radius:999px;padding:0 16px;height:40px;flex:1}
+.input-pill .mic{font-size:16px;color:var(--muted-2)}
+.input-pill .text{flex:1;font-size:12px;color:var(--muted-2)}
+.end-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.95);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.end-overlay.show{display:flex}
+.end-icon{font-size:40px;margin-bottom:10px;animation:ps 2s infinite}
+@keyframes ps{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.end-overlay h2{font-size:18px;font-weight:700;color:var(--brand-dark);margin-bottom:6px}
+.end-overlay p{font-size:13px;color:var(--muted);margin-bottom:16px}
+.end-btn{background:var(--brand);color:#fff;font-size:13px;font-weight:600;padding:8px 20px;border-radius:8px;border:none;cursor:pointer}
+@media(max-width:768px){.sidebar{display:none}.form-row{grid-template-columns:1fr}.field-row,.field-header{grid-template-columns:1fr}.preview-table td{max-width:80px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">D</div><span class="topbar-brand">DataBrain</span>
+    <div class="topbar-sep"></div><span class="topbar-page">🗄️ 数据源管理</span>
+    <div class="topbar-right"><span class="table-badge" id="tCount">1 张表</span><div class="topbar-avatar">张</div></div>
+  </div>
+  <div class="body-area">
+    <div class="sidebar">
+      <div class="nav-label">核心功能</div>
+      <div class="nav-item"><span class="icon">💬</span>新建查询</div>
+      <div class="nav-item"><span class="icon">📊</span>智能报表</div>
+      <div class="nav-label">数据管理</div>
+      <div class="nav-item active"><span class="icon">🗄️</span>数据源<span class="badge">1</span></div>
+      <div class="nav-item"><span class="icon">📖</span>数据字典</div>
+      <div class="sidebar-divider"></div>
+      <div class="history-title">历史对话</div>
+      <div class="history-item">产品销售额排名分析</div>
+    </div>
+    <div class="main">
+      <div class="prog-track"><div class="prog-fill" id="pFill"></div></div>
+      <div class="controls">
+        <span class="step-ind"><span class="cur" id="cStep">1</span> / 8</span>
+        <button class="ctrl-btn" id="playBtn" title="播放/暂停">⏸</button>
+        <button class="ctrl-btn" id="repBtn" title="重新播放">↻</button>
+      </div>
+      <div class="content-area" id="cArea">
+        <div class="toast" id="okBanner">保存成功</div>
+        <div class="page-header">
+          <div class="page-title">🗄️ 数据源管理</div>
+          <button class="btn-primary" id="addBtn">+ 手动添加表</button>
+        </div>
+        <div class="upload-section">
+          <div class="upload-title">📤 上传数据文件</div>
+          <div class="upload-desc">支持 CSV / Excel (.xlsx / .xls) 格式，本地解析不上传服务器</div>
+          <div class="upload-features">
+            <span class="feature-badge">✅ .csv / .xlsx / .xls</span>
+            <span class="feature-badge">✅ 首行作为字段名</span>
+            <span class="feature-badge">✅ 自动推断字段类型</span>
+            <span class="feature-badge">✅ Excel 多 sheet 可选</span>
+          </div>
+          <div class="dropzone">
+            <div class="dropzone-icon">📊</div>
+            <div class="dropzone-text">点击或拖拽 CSV/Excel 文件到此处</div>
+            <div class="dropzone-link">选择文件</div>
+          </div>
+          <div class="upload-tip">上传后可预览数据、编辑表名和字段描述，确认后导入。</div>
+          <span class="clear-link">清空所有数据</span>
+        </div>
+        <div class="table-list">
+          <div class="table-list-header"><div class="table-list-title">📋 已配置的表</div><div class="table-list-count" id="tListCount">共 0 张表</div></div>
+          <table class="data-table" id="dTable">
+            <thead><tr><th>表名</th><th>别名</th><th>业务域</th><th>字段数</th><th>数据行</th><th>描述</th><th>操作</th></tr></thead>
+            <tbody id="dBody">
+              <tr id="emptyRow"><td colspan="7" style="text-align:center;color:var(--muted-2);padding:24px;font-size:13px">暂无已配置的表，请上传文件或手动添加</td></tr>
+              <tr id="row1" style="display:none"><td>aiin</td><td>AI分析平台真实测评(in)</td><td>自定义</td><td>15</td><td>10</td><td>从 AI分析平台真实测评(in).csv 导入</td><td><span class="action-link" id="prevLink">预览</span> · <span class="action-link" id="editLink">编辑</span> · <span class="action-link danger">删除</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="parseBox" style="display:none;background:var(--white);border-radius:12px;padding:16px 20px;margin-top:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="font-size:20px">📄</span><div><div style="font-size:13px;font-weight:600">AI分析平台真实测评(in).csv</div><div style="font-size:11px;color:var(--muted)">1.8 KB · 正在解析...</div></div></div>
+          <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden"><div id="parseBar" style="height:100%;width:0%;background:var(--brand);transition:width .3s"></div></div>
+          <div id="parseText" style="font-size:11px;color:var(--muted);margin-top:6px">正在解析数据结构... 0%</div>
+        </div>
+      </div>
+      <div class="input-bar">
+        <div class="input-pill"><span class="mic">🎤</span><span class="text">输入你的数据问题，或直接拖入 CSV/Excel 文件开始分析</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal-ov" id="prevModal">
+  <div class="modal" style="width:780px;max-width:95vw">
+    <div class="modal-header">
+      <div><div class="modal-title">👁️ 预览并导入数据</div><div class="modal-subtitle">aiin (AI数析平台真实测评(in)) · 从 CSV 导入 (Sheet: Sheet1) · 共 10 行数据 · 共 10 行预览</div></div>
+      <button class="modal-close" id="prevClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <table class="preview-table">
+        <thead><tr>
+          <th>销售渠道<span class="ct">col_1 - varchar(50)</span></th>
+          <th>厂商<span class="ct">col_2 - varchar(50)</span></th>
+          <th>商品品类<span class="ct">col_3 - varchar(50)</span></th>
+          <th>NL2SQL准确率<span class="ct">decimal(14,2)</span></th>
+          <th>核心定位<span class="ct">col_4 - varchar(50)</span></th>
+        </tr></thead>
+        <tbody>
+          <tr><td>DataMind AI</td><td>自研团队</td><td>NL2SQL专业平台</td><td><span class="type-badge dec">92.5</span></td><td>自然语言转SQL+可视化</td></tr>
+          <tr><td>Quick BI</td><td>阿里云</td><td>对话式BI</td><td><span class="type-badge dec">88.0</span></td><td>企业级BI+NL2SQL</td></tr>
+          <tr><td>DataWind</td><td>火山引擎</td><td>对话式BI</td><td><span class="type-badge dec">87.0</span></td><td>增长分析+NL2SQL</td></tr>
+          <tr><td>ChatGPT</td><td>OpenAI</td><td>通用大模型</td><td><span class="type-badge dec">85.0</span></td><td>对话+代码执行分析</td></tr>
+          <tr><td>腾讯云BI</td><td>腾讯</td><td>对话式BI</td><td><span class="type-badge dec">86.0</span></td><td>企业BI+大模型</td></tr>
+          <tr><td>Microsoft Fabric</td><td>微软</td><td>一体化分析</td><td><span class="type-badge dec">84.0</span></td><td>Lakehouse+AI</td></tr>
+          <tr><td>Claude</td><td>Anthropic</td><td>通用大模型</td><td><span class="type-badge dec">83.5</span></td><td>长文本推理分析</td></tr>
+          <tr><td>Tableau AI</td><td>Salesforce</td><td>对话式BI</td><td><span class="type-badge dec">82.0</span></td><td>企业可视化+AI洞察</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer"><button class="modal-btn cancel" id="prevCloseBtn">关闭</button></div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-ov" id="editModal">
+  <div class="modal" style="width:580px;max-width:95vw">
+    <div class="modal-header"><div class="modal-title">✏️ 编辑表: aiin</div><button class="modal-close" id="editClose">✕</button></div>
+    <div class="modal-body">
+      <div class="field-header"><span>字段名</span><span>数据类型</span><span>字段描述</span><span></span></div>
+      <div class="field-row"><input class="form-input" value="NL2SQL" style="font-size:12px;padding:6px 8px"><select class="type-select"><option>decimal(14,2)</option></select><input class="form-input" value="NL2SQL准确率(%)" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+      <div class="field-row"><input class="form-input" value="col_6" style="font-size:12px;padding:6px 8px"><select class="type-select"><option>varchar(50)</option></select><input class="form-input" value="多表关联" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+      <div class="field-row"><input class="form-input" value="col_7" style="font-size:12px;padding:6px 8px"><select class="type-select"><option>varchar(50)</option></select><input class="form-input" value="子查询嵌套" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+      <div class="field-row"><input class="form-input" value="col_8" style="font-size:12px;padding:6px 8px"><select class="type-select"><option>varchar(50)</option></select><input class="form-input" value="可视化图表类型" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+      <div class="field-row"><input class="form-input" value="col_12" style="font-size:12px;padding:6px 8px"><select class="type-select"><option>decimal(14,2)</option></select><input class="form-input" value="平均响应(秒)" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+      <div class="field-row"><input class="form-input" value="col_1_5" style="font-size:12px;padding:6px 8px"><select class="type-select"><option>decimal(14,2)</option></select><input class="form-input" value="综合评分(1-5)" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+    </div>
+    <div class="modal-footer"><button class="modal-add-link">+ 添加字段</button><button class="modal-btn cancel" id="editCancel">取消</button><button class="modal-btn confirm">保存</button></div>
+  </div>
+</div>
+
+<!-- Add Table Modal -->
+<div class="modal-ov" id="addModal">
+  <div class="modal" style="width:520px;max-width:95vw">
+    <div class="modal-header"><div class="modal-title">📋 添加表</div><button class="modal-close" id="addClose">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">表名 (英文)</div><input type="text" class="form-input" id="tnInput" placeholder="如 sales_order"></div>
+      <div class="form-group"><div class="form-row"><div><div class="form-label">中文别名</div><input type="text" class="form-input" id="alInput" placeholder="如 销售订单表"></div><div><div class="form-label">业务域</div><select class="type-select" style="height:36px"><option>自定义</option></select></div></div></div>
+      <div class="form-group"><div class="form-label">表描述</div><textarea class="form-textarea" placeholder="描述该表的业务含义和存储内容"></textarea></div>
+      <div class="form-group">
+        <div class="form-label">字段列表</div>
+        <div class="field-header"><span>字段名</span><span>数据类型</span><span>字段描述</span><span></span></div>
+        <div class="field-row"><input type="text" class="form-input" id="fnInput" placeholder="字段名" style="font-size:12px;padding:6px 8px"><select class="type-select" style="font-size:12px;padding:6px 8px"><option>varchar(50)</option><option>decimal(14,2)</option><option>int</option></select><input type="text" class="form-input" id="fdInput" placeholder="字段描述" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+        <button class="modal-add-link" style="margin-top:8px">+ 添加字段</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="modal-btn cancel" id="addCancel">取消</button><button class="modal-btn confirm" id="saveBtn">保存</button></div>
+  </div>
+</div>
+
+<!-- End Overlay -->
+<div class="end-overlay" id="endOv">
+  <div class="end-icon">🚀</div>
+  <h2>数据源管理演示完成！</h2>
+  <p>预览数据 → 编辑表结构 → 手动添加表</p>
+  <button class="end-btn" onclick="restart()">↻ 重新播放</button>
+</div>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87a.5.5 0 0 0 .35-.85L6.35 2.85a.5.5 0 0 0-.85.36z" fill="#7C3AED" stroke="white" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+  <div class="ring"></div>
+</div>
+
+<script>
+(function(){
+  var cursor=document.getElementById('cursor');
+  var pFill=document.getElementById('pFill');
+  var cStep=document.getElementById('cStep');
+  var playBtn=document.getElementById('playBtn');
+  var repBtn=document.getElementById('repBtn');
+  var cArea=document.getElementById('cArea');
+  var prevModal=document.getElementById('prevModal');
+  var editModal=document.getElementById('editModal');
+  var addModal=document.getElementById('addModal');
+  var prevLink=document.getElementById('prevLink');
+  var editLink=document.getElementById('editLink');
+  var addBtn=document.getElementById('addBtn');
+  var prevCloseBtn=document.getElementById('prevCloseBtn');
+  var prevClose=document.getElementById('prevClose');
+  var editCancel=document.getElementById('editCancel');
+  var editClose=document.getElementById('editClose');
+  var addClose=document.getElementById('addClose');
+  var addCancel=document.getElementById('addCancel');
+  var tnInput=document.getElementById('tnInput');
+  var alInput=document.getElementById('alInput');
+  var fnInput=document.getElementById('fnInput');
+  var fdInput=document.getElementById('fdInput');
+  var saveBtn=document.getElementById('saveBtn');
+  var tCount=document.getElementById('tCount');
+  var tListCount=document.getElementById('tListCount');
+  var dBody=document.getElementById('dBody');
+  var okBanner=document.getElementById('okBanner');
+  var endOv=document.getElementById('endOv');
+  var emptyRow=document.getElementById('emptyRow');
+  var row1=document.getElementById('row1');
+  var dropzone=document.querySelector('.dropzone');
+  var parseBox=document.getElementById('parseBox');
+  var parseBar=document.getElementById('parseBar');
+  var parseText=document.getElementById('parseText');
+  var timers=[];
+  var step=0;
+  var playing=true;
+  var totalSteps=10;
+
+  function clr(){timers.forEach(function(t){clearTimeout(t);clearInterval(t)});timers=[]}
+  function sch(fn,d){var t=setTimeout(fn,d);timers.push(t);return t}
+  function setStep(n){step=n;cStep.textContent=n;pFill.style.width=(n/totalSteps*100)+'%'}
+  function showCursor(){cursor.classList.add('vis')}
+  function hideCursor(){cursor.classList.remove('vis')}
+  function moveTo(el){
+    if(!el)return;
+    var r=el.getBoundingClientRect();
+    cursor.style.transition='left .8s cubic-bezier(.4,0,.2,1),top .8s cubic-bezier(.4,0,.2,1)';
+    cursor.style.left=(r.left+r.width*.5-12)+'px';
+    cursor.style.top=(r.top+r.height*.5-2)+'px';
+  }
+  function clickEl(el){
+    if(!el)return;
+    var r=el.getBoundingClientRect();
+    cursor.style.left=(r.left+r.width*.5-12)+'px';
+    cursor.style.top=(r.top+r.height*.5-2)+'px';
+    cursor.classList.add('click');
+    setTimeout(function(){cursor.classList.remove('click')},600);
+  }
+  function moveToXY(x,y){
+    cursor.style.transition='left .8s cubic-bezier(.4,0,.2,1),top .8s cubic-bezier(.4,0,.2,1)';
+    cursor.style.left=(x-12)+'px';cursor.style.top=(y-2)+'px';
+  }
+  function typeIn(el,text,sp){
+    el.value='';var i=0;var s=sp||70;
+    var t=setInterval(function(){
+      if(i<text.length){el.value=text.substring(0,i+1);i++}
+      else{clearInterval(t)}
+    },s);
+    timers.push(t);
+  }
+  function openModal(m){m.classList.add('show')}
+  function closeModal(m){m.classList.remove('show')}
+  function clearHL(){
+    [prevLink,editLink,addBtn,tnInput,alInput,fnInput,fdInput,saveBtn].forEach(function(el){
+      if(el)el.classList.remove('hl');
+    });
+  }
+  function resetForm(){
+    tnInput.value='';alInput.value='';fnInput.value='';fdInput.value='';
+  }
+  function addNewTableRow(){
+    var tr=document.createElement('tr');
+    tr.className='new-row';
+    tr.innerHTML='<td>sales_order</td><td>销售订单表</td><td>自定义</td><td>1</td><td>0</td><td>-</td><td><span class="action-link">预览</span> · <span class="action-link">编辑</span> · <span class="action-link danger">删除</span></td>';
+    dBody.insertBefore(tr,dBody.firstChild);
+    tCount.textContent='2 张表';
+    tListCount.textContent='共 2 张表';
+  }
+
+  function run(){
+    clr();hideCursor();playing=true;playBtn.textContent='⏸';
+    clearHL();resetForm();
+    closeModal(prevModal);closeModal(editModal);closeModal(addModal);
+    okBanner.classList.remove('show');
+    endOv.classList.remove('show');
+    var newRow=dBody.querySelector('.new-row');
+    if(newRow)dBody.removeChild(newRow);
+    // Reset to 0 tables - empty state
+    emptyRow.style.display='';
+    row1.style.display='none';
+    parseBox.style.display='none';
+    if(dropzone)dropzone.classList.remove('hl');
+    if(parseBar)parseBar.style.width='0%';
+    tCount.textContent='0 张表';
+    tListCount.textContent='共 0 张表';
+    setStep(1);
+
+    // === Step 1: Cursor drags file to upload area ===
+    sch(function(){showCursor();moveToXY(window.innerWidth*.65,300)},800);
+    sch(function(){moveTo(dropzone)},1800);
+    sch(function(){clickEl(dropzone);if(dropzone)dropzone.classList.add('hl')},2600);
+    sch(function(){if(parseBox)parseBox.style.display='block';setStep(2)},2800);
+    // Parsing progress animation
+    sch(function(){if(parseBar)parseBar.style.width='30%';if(parseText)parseText.textContent='正在解析数据结构... 30%'},3000);
+    sch(function(){if(parseBar)parseBar.style.width='65%';if(parseText)parseText.textContent='正在推断字段类型... 65%'},3500);
+    sch(function(){if(parseBar)parseBar.style.width='100%';if(parseText)parseText.textContent='解析完成 ✓'},4000);
+    // Show aiin table
+    sch(function(){if(parseBox)parseBox.style.display='none';if(dropzone)dropzone.classList.remove('hl');if(emptyRow)emptyRow.style.display='none';if(row1)row1.style.display='';tCount.textContent='1 张表';tListCount.textContent='共 1 张表';setStep(3)},4500);
+
+    // === Step 3: Cursor clicks "预览" ===
+    sch(function(){moveTo(prevLink)},5300);
+    sch(function(){clickEl(prevLink);prevLink.classList.add('hl')},6100);
+    sch(function(){openModal(prevModal);setStep(4)},6400);
+
+    // === Step 4: Preview modal → click "关闭" ===
+    sch(function(){moveTo(prevCloseBtn)},7500);
+    sch(function(){clickEl(prevCloseBtn)},8300);
+    sch(function(){closeModal(prevModal);prevLink.classList.remove('hl');setStep(5)},8600);
+
+    // === Step 5: Click "编辑" ===
+    sch(function(){moveTo(editLink)},9300);
+    sch(function(){clickEl(editLink);editLink.classList.add('hl')},10100);
+    sch(function(){openModal(editModal);setStep(6)},10400);
+
+    // === Step 6: Edit modal → click "取消" ===
+    sch(function(){moveTo(editCancel)},11500);
+    sch(function(){clickEl(editCancel)},12300);
+    sch(function(){closeModal(editModal);editLink.classList.remove('hl');setStep(7)},12600);
+
+    // === Step 7: Click "+ 手动添加表" ===
+    sch(function(){moveTo(addBtn)},13300);
+    sch(function(){clickEl(addBtn);addBtn.classList.add('hl')},14100);
+    sch(function(){openModal(addModal);setStep(8)},14400);
+
+    // === Step 8: Type form fields ===
+    sch(function(){moveTo(tnInput)},15000);
+    sch(function(){clickEl(tnInput);tnInput.classList.add('hl')},15600);
+    sch(function(){typeIn(tnInput,'sales_order',70)},15800);
+    sch(function(){tnInput.classList.remove('hl');moveTo(alInput)},16600);
+    sch(function(){clickEl(alInput);alInput.classList.add('hl')},17200);
+    sch(function(){typeIn(alInput,'销售订单表',80)},17400);
+    sch(function(){alInput.classList.remove('hl');moveTo(fnInput)},18300);
+    sch(function(){clickEl(fnInput);fnInput.classList.add('hl')},18900);
+    sch(function(){typeIn(fnInput,'order_id',70)},19100);
+    sch(function(){fnInput.classList.remove('hl');moveTo(fdInput)},19900);
+    sch(function(){clickEl(fdInput);fdInput.classList.add('hl')},20500);
+    sch(function(){typeIn(fdInput,'订单编号',70)},20700);
+    sch(function(){fdInput.classList.remove('hl');moveTo(saveBtn)},21500);
+    sch(function(){clickEl(saveBtn);saveBtn.classList.add('hl')},22100);
+
+    // === Step 9: Save → modal closes → 2 tables ===
+    sch(function(){closeModal(addModal);saveBtn.classList.remove('hl');addBtn.classList.remove('hl');setStep(9)},22500);
+    sch(function(){addNewTableRow();okBanner.classList.add('show')},22700);
+
+    // === Step 10: End ===
+    sch(function(){hideCursor();setStep(10)},24500);
+    sch(function(){endOv.classList.add('show')},25000);
+  }
+
+  function restart(){run()}
+  window.restart=restart;
+
+  playBtn.addEventListener('click',function(){
+    if(playBtn.textContent==='↻'){restart();return}
+    if(playing){playing=false;clr();playBtn.textContent='▶'}
+    else{playing=true;playBtn.textContent='⏸';restart()}
+  });
+  repBtn.addEventListener('click',restart);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='r'||e.key==='R'){restart()}
+    else if(e.key===' '){e.preventDefault();playBtn.click()}
+  });
+  sch(function(){run()},300);
+})();
+</script>
+
+
+</body></html>
