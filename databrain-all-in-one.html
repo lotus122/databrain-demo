@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DataBrain · 完整功能演示</title>
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;rect width='100' height='100' rx='20' fill='%237C3AED'/&gt;&lt;text x='50' y='68' font-size='60' font-weight='700' text-anchor='middle' fill='white' font-family='sans-serif'&gt;D&lt;/text&gt;&lt;/svg&gt;">
+<style>
+:root{--brand:#7C3AED;--brand-dark:#1E1B4B;--brand-light:#EDE9FE;--brand-lighter:#F5F3FF;--ink:#111827;--ink-2:#1F2937;--muted:#6B7280;--muted-2:#9CA3AF;--border:#E5E7EB;--border-2:#D1D5DB;--bg:#F3F4F6;--bg-2:#F9FAFB;--white:#FFF;--success:#10B981;--success-light:#ECFDF5;--success-dark:#059669;--blue:#3B82F6;--blue-light:#EFF6FF;--orange:#F97316;--red:#EF4444;--amber:#F59E0B;--code-bg:#1E1E2E}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--ink);height:100vh;overflow:hidden;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.app{display:flex;flex-direction:column;height:100vh}
+.topbar{height:48px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0;z-index:50}
+.topbar-logo{width:28px;height:28px;border-radius:8px;background:var(--brand);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center}
+.topbar-brand{font-weight:700;font-size:14px;margin-right:12px}
+.topbar-sep{width:1px;height:18px;background:var(--border)}
+.topbar-page{font-size:13px;font-weight:600;color:var(--ink-2)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.table-badge{font-size:11px;font-weight:600;padding:2px 10px;border-radius:12px}
+.table-badge.empty{background:#FEF2F2;color:var(--red)}
+.table-badge.has{background:var(--success-light);color:var(--success)}
+.topbar-avatar{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center}
+.body-area{display:flex;flex:1;overflow:hidden}
+.sidebar{width:180px;background:var(--white);border-right:1px solid var(--border);padding:12px 8px;flex-shrink:0;overflow-y:auto}
+.nav-label{font-size:10px;font-weight:600;color:var(--muted-2);text-transform:uppercase;letter-spacing:.05em;padding:8px 10px 4px}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;font-size:13px;color:var(--ink-2);margin-bottom:2px;cursor:pointer;transition:all .2s}
+.nav-item.active{background:var(--brand-light);color:var(--brand);font-weight:600}
+.nav-item .icon{font-size:15px;width:18px;text-align:center}
+.nav-item .badge{width:16px;height:16px;border-radius:50%;background:var(--orange);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-left:auto}
+.sidebar-divider{height:1px;background:var(--border);margin:4px 8px}
+.history-title{font-size:10px;font-weight:600;color:var(--muted-2);padding:8px 10px 4px;display:flex;align-items:center;justify-content:space-between}
+.history-new-btn{font-size:14px;color:var(--brand);cursor:pointer;border:none;background:transparent;font-weight:600}
+.history-item{font-size:12px;color:var(--muted);padding:7px 10px;border-radius:6px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;transition:all .2s}
+.history-item.active{background:var(--brand-light);color:var(--brand);font-weight:600}
+.history-item.hl{background:var(--brand-lighter)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.prog-track{position:absolute;top:0;left:0;right:0;height:3px;background:var(--border);z-index:40}
+.prog-fill{height:100%;width:0%;background:var(--brand);transition:width .3s linear}
+.controls{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;z-index:30}
+.ctrl-btn{background:var(--white);border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.ctrl-btn:hover{background:var(--brand-lighter);border-color:var(--brand);color:var(--brand)}
+.step-ind{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:3px 10px;font-size:11px;font-weight:600;color:var(--muted);box-shadow:0 2px 6px rgba(0,0,0,.06)}
+.step-ind .cur{color:var(--brand)}
+.chapter-tag{background:var(--brand);color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;box-shadow:0 2px 6px rgba(124,58,237,.2)}
+.content-area{flex:1;overflow-y:auto;position:relative;background:var(--bg)}
+.slide{position:absolute;top:0;left:0;right:0;bottom:0;opacity:0;pointer-events:none;overflow-y:auto;padding:16px 20px;transition:opacity .4s}
+.slide.active{opacity:1;pointer-events:auto}
+/* Chat messages */
+.chat-area{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:10px}
+.msg-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0}
+.msg-avatar.user{background:var(--blue);color:#fff}
+.msg-avatar.ai{background:var(--brand);color:#fff}
+.msg-body{flex:1;min-width:0}
+.msg-name{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.msg-bubble{background:var(--white);border-radius:12px;padding:12px 16px;box-shadow:0 1px 3px rgba(0,0,0,.05);font-size:13px;line-height:1.6}
+.user-bubble-row{display:flex;justify-content:flex-end;margin-bottom:10px}
+.user-bubble{background:var(--brand);color:#fff;padding:8px 16px;border-radius:16px 16px 4px 16px;font-size:13px;font-weight:500;max-width:70%}
+/* Workflow steps */
+.wf-steps{display:flex;align-items:center;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.wf-step{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;white-space:nowrap;transition:all .3s}
+.wf-step .ic{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0}
+.wf-step.done{background:var(--success-light);color:var(--success)}
+.wf-step.done .ic{background:var(--success);color:#fff}
+.wf-step.active{background:var(--brand-light);color:var(--brand)}
+.wf-step.active .ic{background:var(--brand);color:#fff;animation:spin 1.5s linear infinite}
+.wf-step.pending{background:var(--bg-2);color:var(--muted-2)}
+.wf-step.pending .ic{background:var(--border);color:var(--muted-2)}
+.wf-arrow{font-size:11px;color:var(--muted-2)}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* SQL code */
+.sql-code{background:var(--code-bg);padding:14px 16px;font-family:'Fira Code','Courier New',monospace;font-size:12px;line-height:1.8;overflow-x:auto;color:#E0E0E0}
+.sql-code .kw{color:#C678DD}
+.sql-code .fn{color:#61AFEF}
+.sql-code .str{color:#98C379}
+.sql-code .cm{color:#7F8488;font-style:italic}
+.sql-code .id{color:#FFCB6B}
+.sql-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:10px 14px;border-top:1px solid var(--border)}
+.sql-btn{font-size:12px;font-weight:600;padding:7px 16px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .2s}
+.sql-btn.regen{background:var(--bg-2);color:var(--ink-2);border:1px solid var(--border)}
+.sql-btn.exec{background:var(--brand);color:#fff}
+.sql-btn.hl{box-shadow:0 0 0 3px rgba(124,58,237,.25);transform:scale(1.05)}
+/* Report card */
+.report-card{background:var(--white);border-radius:12px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:10px}
+.report-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.report-title{font-size:13px;font-weight:700}
+.report-badge{background:var(--success);color:#fff;font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px}
+.report-meta{font-size:11px;color:var(--muted);margin-bottom:10px}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:14px}
+.metric-card{border-radius:10px;padding:10px;text-align:center}
+.metric-card.green{background:#D1FAE5}
+.metric-card.yellow{background:#FEF3C7}
+.metric-card.pink{background:#FCE7F3}
+.metric-card.blue{background:#DBEAFE}
+.metric-num{font-size:16px;font-weight:700}
+.metric-label{font-size:10px;color:var(--muted)}
+.rank-table{width:100%;border-collapse:collapse;margin-top:8px}
+.rank-table th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:6px 10px;background:var(--bg-2);border-bottom:1px solid var(--border)}
+.rank-table td{font-size:12px;color:var(--ink-2);padding:7px 10px;border-bottom:1px solid var(--border)}
+.rank-bar{height:8px;border-radius:4px;background:var(--brand);opacity:.8}
+.action-bar{display:flex;align-items:center;gap:6px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.action-btn{display:flex;align-items:center;gap:4px;background:transparent;border:none;color:var(--muted);font-size:12px;font-weight:500;padding:6px 10px;border-radius:8px;cursor:pointer}
+.action-btn.primary{background:var(--brand);color:#fff;margin-left:auto;font-weight:600}
+.action-btn.hl{box-shadow:0 0 0 3px rgba(124,58,237,.25);transform:scale(1.05)}
+/* Report list */
+.report-list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.report-list-title{font-size:18px;font-weight:700}
+.report-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px}
+.rpt-card{background:var(--white);border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.05);overflow:hidden}
+.rpt-card.new-card{border:2px solid var(--success)}
+.rpt-card-chart{height:120px;background:linear-gradient(135deg,#F5F3FF,#EDE9FE);display:flex;align-items:flex-end;justify-content:center;gap:4px;padding:16px 20px;position:relative}
+.rpt-card-chart .bar{width:14%;border-radius:4px 4px 0 0;background:var(--brand);opacity:.8}
+.rpt-card-chart .new-badge{position:absolute;top:8px;right:8px;font-size:10px;padding:2px 8px;border-radius:4px;background:var(--success);color:#fff;font-weight:600}
+.rpt-card-body{padding:14px 16px}
+.rpt-card-tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:6px;background:var(--brand-light);color:var(--brand);font-weight:500;margin-bottom:6px}
+.rpt-card-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.rpt-card-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+.rpt-card-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--muted-2);margin-bottom:10px}
+.rpt-card-meta .sep{width:1px;height:10px;background:var(--border)}
+.rpt-card-actions{display:flex;gap:8px}
+.rpt-card-actions .btn{font-size:12px;font-weight:600;padding:5px 12px;border-radius:6px;border:none;cursor:pointer}
+.rpt-card-actions .btn-view{background:var(--brand);color:#fff}
+.rpt-card-actions .btn-export{background:var(--white);color:var(--brand);border:1.5px solid var(--brand)}
+.rpt-card-actions .btn-delete{background:transparent;color:var(--red)}
+/* Data source */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.page-title{font-size:18px;font-weight:700}
+.btn-primary{display:flex;align-items:center;gap:4px;background:var(--brand);color:#fff;font-size:13px;font-weight:600;padding:7px 14px;border-radius:8px;border:none;cursor:pointer}
+.btn-primary.hl{box-shadow:0 0 0 3px rgba(124,58,237,.25);transform:scale(1.05)}
+.upload-section{background:var(--white);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.upload-title{font-size:14px;font-weight:700;margin-bottom:4px}
+.upload-desc{font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6}
+.upload-features{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.feature-badge{font-size:11px;color:var(--success-dark);background:var(--success-light);padding:3px 8px;border-radius:6px;border:1px solid #A7F3D0}
+.dropzone{border:2px dashed var(--border-2);border-radius:12px;padding:20px;text-align:center;background:var(--bg-2)}
+.dropzone.hl{border-color:var(--brand);background:var(--brand-lighter)}
+.dropzone-icon{font-size:24px;margin-bottom:6px}
+.dropzone-text{font-size:12px;color:var(--muted)}
+.table-list{background:var(--white);border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.table-list-header{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:8px 12px;background:var(--bg-2);border-bottom:1px solid var(--border);white-space:nowrap}
+.data-table td{font-size:12px;color:var(--ink-2);padding:10px 12px;border-bottom:1px solid var(--border)}
+.data-table tr.new-row{background:var(--success-light)}
+.data-table tr.new-row td:first-child{border-left:3px solid var(--success)}
+.action-link{font-size:11px;color:var(--blue);cursor:pointer}
+.action-link.danger{color:var(--red)}
+.action-link.hl{background:var(--brand-light);padding:2px 6px;border-radius:4px;font-weight:600}
+/* Parse box */
+.parse-box{background:var(--white);border-radius:12px;padding:16px 20px;margin-top:12px;box-shadow:0 1px 3px rgba(0,0,0,.05)}
+.parse-bar-track{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.parse-bar-fill{height:100%;width:0%;background:var(--brand);transition:width .3s}
+/* Data dictionary */
+.dict-layout{display:flex;gap:1px;height:100%;background:var(--border);border-radius:12px;overflow:hidden}
+.dict-left{width:220px;background:var(--white);padding:12px;display:flex;flex-direction:column;overflow-y:auto}
+.dict-search input{width:100%;border:1px solid var(--border-2);border-radius:8px;padding:7px 10px;font-size:12px;font-family:inherit}
+.dict-label{font-size:10px;font-weight:600;color:var(--muted-2);padding:4px 0 6px}
+.dict-table-item{padding:8px 10px;border-radius:8px;cursor:pointer;margin-bottom:4px;font-size:12px}
+.dict-table-item.active{background:var(--brand-light);color:var(--brand)}
+.dict-table-item .tn{font-weight:600;font-size:13px}
+.dict-table-item .cn{font-size:11px;color:var(--muted);margin-top:2px}
+.dict-right{flex:1;background:var(--white);padding:16px 20px;overflow-y:auto;display:flex;flex-direction:column}
+.dict-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.dict-title{font-size:16px;font-weight:700}
+.dict-mgr-link{font-size:12px;color:var(--brand);font-weight:600;cursor:pointer}
+.dict-mgr-link.hl{background:var(--brand-light);padding:4px 10px;border-radius:6px}
+.dict-fields{width:100%;border-collapse:collapse;margin-bottom:16px}
+.dict-fields th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:8px 12px;background:var(--bg-2);border-bottom:1px solid var(--border)}
+.dict-fields td{font-size:12px;padding:8px 12px;border-bottom:1px solid var(--border)}
+.dict-fields .fn{font-family:'Courier New',monospace;font-weight:600}
+.pk-badge{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;background:#FEF3C7;color:#92400E;margin-left:4px}
+.type-tag{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:500}
+.type-tag.num{background:#DBEAFE;color:#1E40AF}
+.type-tag.date{background:#D1FAE5;color:#065F46}
+.type-tag.text{background:#FCE7F3;color:#9D174D}
+.dict-actions{display:flex;gap:10px;margin-top:auto;padding-top:14px}
+.btn-go{background:var(--brand);color:#fff;font-size:13px;font-weight:600;padding:9px 20px;border-radius:8px;border:none;cursor:pointer}
+.btn-go.hl{box-shadow:0 0 0 3px rgba(124,58,237,.25);transform:scale(1.05)}
+.btn-edit{background:var(--white);color:var(--ink-2);font-size:13px;font-weight:600;padding:9px 20px;border-radius:8px;border:1.5px solid var(--border-2);cursor:pointer}
+.btn-edit.hl{border-color:var(--brand);background:var(--brand-lighter);color:var(--brand)}
+/* Empty query */
+.query-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center}
+.query-empty h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.query-empty p{font-size:13px;color:var(--muted);margin-bottom:20px}
+.query-dropzone{border:2px dashed var(--border-2);border-radius:16px;padding:36px 48px;background:var(--white);max-width:480px}
+/* Charts */
+.bar-chart{display:flex;flex-direction:column;gap:10px}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-label{font-size:11px;color:var(--ink-2);width:70px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:24px;background:var(--bg-2);border-radius:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:6px;transition:width .8s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;justify-content:flex-end;padding-right:8px;font-size:11px;font-weight:700;color:#fff}
+.bar-fill.c1{background:linear-gradient(90deg,#7C3AED,#A78BFA)}
+.bar-fill.c2{background:linear-gradient(90deg,#3B82F6,#60A5FA)}
+.bar-fill.c3{background:linear-gradient(90deg,#10B981,#34D399)}
+.bar-fill.c4{background:linear-gradient(90deg,#F97316,#FB923C)}
+.bar-fill.c5{background:linear-gradient(90deg,#EF4444,#F87171)}
+.data-card{background:var(--white);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:12px}
+.data-card-head{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.data-tbl{width:100%;border-collapse:collapse}
+.data-tbl th{font-size:11px;font-weight:600;color:var(--muted);text-align:left;padding:8px 14px;background:var(--bg-2);border-bottom:1px solid var(--border)}
+.data-tbl td{font-size:12px;padding:8px 14px;border-bottom:1px solid var(--border)}
+.data-tbl td.num{text-align:right;font-family:'Courier New',monospace;font-weight:600}
+.chart-card{background:var(--white);border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.chart-card-head{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.chart-body{padding:16px 14px}
+/* Modal */
+.modal-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-ov.show{opacity:1;pointer-events:auto}
+.modal{background:var(--white);border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.15);transform:scale(.9);transition:transform .3s;max-height:85vh;display:flex;flex-direction:column;width:460px;max-width:95vw}
+.modal-ov.show .modal{transform:scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-title{font-size:15px;font-weight:700}
+.modal-close{font-size:18px;color:var(--muted-2);cursor:pointer;border:none;background:transparent}
+.modal-body{padding:16px 20px;overflow-y:auto;flex:1}
+.modal-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:12px 20px;border-top:1px solid var(--border);flex-shrink:0}
+.modal-btn{padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none}
+.modal-btn.cancel{background:var(--bg-2);color:var(--ink-2)}
+.modal-btn.confirm{background:var(--brand);color:#fff}
+.modal-btn.confirm.hl{box-shadow:0 0 0 3px rgba(124,58,237,.25);transform:scale(1.05)}
+.modal-desc{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.modal-label{font-size:12px;font-weight:600;margin-bottom:6px}
+.modal-input{width:100%;border:1.5px solid var(--border-2);border-radius:8px;padding:10px 12px;font-size:13px;font-family:inherit}
+.modal-input.hl{border-color:var(--brand);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.modal-meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.meta-tag{font-size:11px;color:var(--muted);background:var(--bg-2);padding:3px 8px;border-radius:6px}
+/* Form */
+.form-group{margin-bottom:12px}
+.form-label{font-size:12px;font-weight:600;margin-bottom:5px}
+.form-input{width:100%;border:1.5px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit}
+.form-input.hl{border-color:var(--brand);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-textarea{width:100%;border:1.5px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:12px;font-family:inherit;min-height:50px;resize:vertical}
+.type-select{border:1.5px solid var(--border-2);border-radius:8px;padding:8px 10px;font-size:12px;font-family:inherit;background:var(--white);width:100%}
+.field-header{display:grid;grid-template-columns:1fr 1.2fr 1.5fr 32px;gap:8px;margin-bottom:6px;font-size:11px;font-weight:600;color:var(--muted)}
+.field-row{display:grid;grid-template-columns:1fr 1.2fr 1.5fr 32px;gap:8px;margin-bottom:6px;align-items:center}
+.field-row .form-input,.field-row .type-select{padding:6px 8px;font-size:12px}
+.field-del{font-size:14px;color:var(--muted-2);cursor:pointer;border:none;background:transparent}
+.modal-add-link{font-size:12px;color:var(--brand);font-weight:600;cursor:pointer;border:none;background:transparent;margin-right:auto}
+/* Toast */
+.toast{position:fixed;right:20px;bottom:20px;background:var(--success);color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;box-shadow:0 4px 12px rgba(16,185,129,.3);opacity:0;transform:translateY(10px);transition:all .4s;z-index:150}
+.toast.show{opacity:1;transform:translateY(0)}
+/* Input bar */
+.input-bar{display:flex;align-items:center;gap:10px;background:var(--white);border-top:1px solid var(--border);padding:10px 16px;flex-shrink:0;position:relative}
+.input-pill{display:flex;align-items:center;gap:8px;background:var(--bg-2);border:1px solid var(--border);border-radius:999px;padding:0 16px;height:40px;flex:1}
+.input-pill.hl{border-color:var(--brand);box-shadow:0 0 0 3px rgba(124,58,237,.15)}
+.input-pill .mic{font-size:16px;color:var(--muted-2)}
+.input-pill .text{flex:1;font-size:12px;color:var(--muted)}
+.input-pill .text.typed{color:var(--ink);font-weight:500}
+.input-pill .text .cursor-blink{display:inline-block;width:2px;height:14px;background:var(--brand);margin-left:2px;vertical-align:middle;animation:blink .8s infinite}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+.input-tooltip{position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%) translateY(10px);background:var(--ink);color:#fff;padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;white-space:nowrap;opacity:0;pointer-events:none;transition:all .4s;z-index:60;box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.input-tooltip:after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--ink)}
+.input-tooltip.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.input-send{width:36px;height:36px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--muted-2);cursor:pointer;flex-shrink:0;transition:all .2s}
+.input-send.active{background:var(--brand);color:#fff}
+.input-send.hl{box-shadow:0 0 0 3px rgba(124,58,237,.25);transform:scale(1.1)}
+/* Cursor */
+.cursor{position:fixed;z-index:9999;pointer-events:none;width:24px;height:24px;opacity:0;transition:opacity .3s}
+.cursor.vis{opacity:1}
+.cursor svg{filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
+.cursor .ring{position:absolute;top:50%;left:50%;width:36px;height:36px;border:2.5px solid var(--brand);border-radius:50%;transform:translate(-50%,-50%) scale(0);opacity:0}
+.cursor.click .ring{animation:cr .6s ease}
+@keyframes cr{0%{transform:translate(-50%,-50%) scale(.3);opacity:1}100%{transform:translate(-50%,-50%) scale(2.5);opacity:0}}
+/* End */
+.end-ov{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.95);z-index:300;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.end-ov.show{display:flex}
+.end-icon{font-size:40px;margin-bottom:10px;animation:ps 2s infinite}
+@keyframes ps{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.end-ov h2{font-size:18px;font-weight:700;color:var(--brand-dark);margin-bottom:6px}
+.end-ov p{font-size:13px;color:var(--muted);margin-bottom:16px}
+.end-btn{background:var(--brand);color:#fff;font-size:13px;font-weight:600;padding:8px 20px;border-radius:8px;border:none;cursor:pointer}
+/* Chapter hint */
+.ch-hint{position:absolute;top:50px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--brand-dark);color:#fff;padding:10px 20px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(30,27,75,.25);opacity:0;pointer-events:none;transition:all .5s;z-index:35;max-width:90%;text-align:center;white-space:nowrap}
+.ch-hint.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.ch-hint .ch-num{display:inline-block;background:var(--brand);color:#fff;font-size:10px;padding:2px 8px;border-radius:6px;margin-right:8px;font-weight:700}
+.ch-hint:after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:8px solid transparent;border-top-color:var(--brand-dark)}
+/* Question chips */
+.q-chips{margin-top:16px}
+.q-chips-title{font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+.q-chip{display:inline-block;background:var(--white);border:1.5px solid var(--brand);color:var(--brand);padding:7px 14px;border-radius:20px;font-size:12px;font-weight:500;cursor:pointer;transition:all .25s;margin-right:8px;margin-bottom:6px}
+.q-chip:hover{background:var(--brand);color:#fff}
+.q-chip.hl{background:var(--brand);color:#fff;transform:scale(1.05)}
+/* Metric cards (recommended indicators) */
+.metric-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.m-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .25s;text-align:center}
+.m-card:hover{border-color:var(--brand);box-shadow:0 4px 12px rgba(124,58,237,.1)}
+.m-card.hl{border-color:var(--brand);background:var(--brand-lighter);box-shadow:0 4px 16px rgba(124,58,237,.15)}
+.m-card .m-icon{font-size:28px;margin-bottom:8px}
+.m-card .m-title{font-size:13px;font-weight:700;color:var(--ink-2);margin-bottom:4px;line-height:1.3}
+.m-card .m-desc{font-size:11px;color:var(--muted);line-height:1.4}
+/* Continue button */
+.continue-btn{display:inline-flex;align-items:center;gap:6px;background:var(--brand-light);color:var(--brand);border:1px solid var(--brand);padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;transition:all .25s}
+.continue-btn.hl{background:var(--brand);color:#fff}
+.conv-section{margin-top:12px}
+.conv-mini-report{background:var(--bg-2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--ink-2);border:1px solid var(--border)}
+.conv-mini-report .mini-title{font-weight:700;margin-bottom:4px}
+/* Data preview modal */
+.preview-tbl{width:100%;border-collapse:collapse}
+.preview-tbl th{font-size:10px;font-weight:600;color:var(--muted);text-align:left;padding:6px 10px;background:var(--bg-2);border-bottom:1px solid var(--border);white-space:nowrap}
+.preview-tbl td{font-size:11px;padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.preview-tbl td.num{text-align:right;font-family:'Courier New',monospace}
+@media(max-width:768px){.sidebar{display:none}.form-row{grid-template-columns:1fr}.field-row,.field-header{grid-template-columns:1fr}.report-cards{grid-template-columns:1fr}.dict-left{width:160px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="topbar-logo">D</div><span class="topbar-brand">DataBrain</span>
+    <div class="topbar-sep"></div><span class="topbar-page" id="topPage">💬 新建查询</span>
+    <div class="topbar-right"><span class="table-badge has" id="tBadge">3 张表</span><div class="topbar-avatar">张</div></div>
+  </div>
+  <div class="body-area">
+    <div class="sidebar">
+      <div class="nav-label">核心功能</div>
+      <div class="nav-item active" id="navQuery"><span class="icon">💬</span>新建查询</div>
+      <div class="nav-item" id="navReport"><span class="icon">📊</span>智能报表</div>
+      <div class="nav-label">数据管理</div>
+      <div class="nav-item" id="navDS"><span class="icon">🗄️</span>数据源<span class="badge">3</span></div>
+      <div class="nav-item" id="navDict"><span class="icon">📖</span>数据字典</div>
+      <div class="sidebar-divider"></div>
+      <div class="history-title">历史对话<span class="history-new-btn" id="newChatBtn">+</span></div>
+      <div class="history-item" id="hist1">品类利润排名前5</div>
+      <div class="history-item" id="hist2">销售数量趋势分析</div>
+    </div>
+    <div class="main">
+      <div class="prog-track"><div class="prog-fill" id="pFill"></div></div>
+      <div class="controls">
+        <span class="chapter-tag" id="chapterTag">P1</span>
+        <span class="step-ind"><span class="cur" id="cStep">1</span> / 6</span>
+        <button class="ctrl-btn" id="playBtn" title="播放/暂停">⏸</button>
+        <button class="ctrl-btn" id="repBtn" title="重新播放">↻</button>
+      </div>
+      <div class="ch-hint" id="chHint"></div>
+      <div class="content-area" id="cArea">
+
+        <!-- ====== Ch1-S1: Empty query page ====== -->
+        <div class="slide active" id="s1">
+          <div class="query-empty">
+            <h2>上传你的数据文件开始分析</h2>
+            <p>支持 CSV / XLSX / XLS 格式，文件仅在浏览器本地解析，不会上传服务器</p>
+            <div class="query-dropzone" id="uploadZone1"><div style="font-size:32px;margin-bottom:8px">📁</div><div style="font-size:13px;color:var(--muted)">点击或拖拽文件到此处上传</div><div style="font-size:13px;color:var(--brand);font-weight:600">支持 .csv / .xlsx / .xls 文件</div></div>
+          </div>
+        </div>
+
+        <!-- ====== Ch1-S2: File upload - parse progress ====== -->
+        <div class="slide" id="s1b">
+          <div class="query-empty">
+            <h2>上传你的数据文件开始分析</h2>
+            <p>支持 CSV / XLSX / XLS 格式，文件仅在浏览器本地解析，不会上传服务器</p>
+            <div class="query-dropzone" style="border-color:var(--brand);background:var(--brand-lighter)">
+              <div style="font-size:32px;margin-bottom:8px">📄</div>
+              <div style="font-size:13px;color:var(--brand);font-weight:600">AI数析平台真实测评(n).csv</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">1.7 KB · 10 行数据</div>
+            </div>
+            <div style="margin-top:16px;width:100%;max-width:480px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:16px">⚙️</span><span style="font-size:13px;font-weight:600" id="parseText1b">正在读取文件内容...</span></div>
+              <div style="height:6px;background:var(--bg);border-radius:3px;overflow:hidden"><div id="parseBar1b" style="height:100%;width:0%;background:var(--brand);transition:width .3s"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== Ch1-S3: Import success + metric cards ====== -->
+        <div class="slide" id="s1c">
+          <div style="max-width:820px;margin:0 auto">
+            <div style="background:var(--success-light);border:1px solid #A7F3D0;border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+              <span style="font-size:20px">✅</span>
+              <div><div style="font-size:13px;font-weight:700;color:var(--success-dark)">已成功导入 1 张表，点击下方指标开始分析</div><div style="font-size:11px;color:var(--muted)">AI数析平台真实测评(n).csv · 10 行 · 15 个字段</div></div>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:var(--ink-2);margin-bottom:4px">常用指标 · 一键分析</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:12px">基于你的数据字段智能推荐，点击卡片即可生成分析报表</div>
+            <div class="metric-cards">
+              <div class="m-card" id="qChip1">
+                <div class="m-icon">📊</div>
+                <div class="m-title">按厂商统计NL2SQL准确率(%)</div>
+                <div class="m-desc">对比各厂商的NL2SQL准确率(%)表现</div>
+              </div>
+              <div class="m-card" id="qChip2">
+                <div class="m-icon">🏆</div>
+                <div class="m-title">厂商的NL2SQL准确率(%)排名</div>
+                <div class="m-desc">找出NL2SQL准确率(%)最高的厂商</div>
+              </div>
+              <div class="m-card" id="qChip3">
+                <div class="m-icon">🖐️</div>
+                <div class="m-title">按商品品类统计NL2SQL准确率(%)</div>
+                <div class="m-desc">了解各商品品类的NL2SQL准确率(%)分布</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== Ch1-S4: SQL generation ====== -->
+        <div class="slide" id="s2">
+          <div class="chat-area">
+            <div class="user-bubble-row"><div class="user-bubble">按厂商统计NL2SQL准确率(%)</div></div>
+            <div class="msg"><div class="msg-avatar ai">D</div><div class="msg-body"><div class="msg-name">DataBrain</div>
+              <div class="msg-bubble" style="padding:0;overflow:hidden">
+                <div class="wf-steps" style="padding:10px 14px 0">
+                  <div class="wf-step done"><span class="ic">✓</span>意图理解</div><span class="wf-arrow">→</span>
+                  <div class="wf-step active"><span class="ic">⟳</span>SQL生成</div><span class="wf-arrow">→</span>
+                  <div class="wf-step pending"><span class="ic">3</span>数据查询</div><span class="wf-arrow">→</span>
+                  <div class="wf-step pending"><span class="ic">4</span>可视化生成</div>
+                </div>
+                <div style="background:var(--code-bg);padding:14px 16px;font-family:'Fira Code','Courier New',monospace;font-size:12px;line-height:1.8;color:#E0E0E0">
+                  <span class="cm">-- 按厂商统计NL2SQL准确率(%)</span><br><span class="kw">SELECT</span> <span class="fn">DATE</span>(order_date) <span class="kw">AS</span> <span class="str">'日期'</span>,<br><span class="fn">SUM</span>(NL2SQL) <span class="kw">AS</span> <span class="str">'NL2SQL准确率(%)'</span>,<br><span class="fn">COUNT</span>(*) <span class="kw">AS</span> 记录数<br><span class="kw">FROM</span> <span class="id">aiin</span><br><span class="kw">GROUP BY</span> <span class="fn">DATE</span>(order_date)<br><span class="kw">ORDER BY</span> <span class="str">`日期`</span> <span class="kw">ASC</span>;
+                </div>
+                <div class="sql-actions"><button class="sql-btn regen">↻ 重新生成</button><button class="sql-btn exec" id="execBtn1">▶ 确认执行</button></div>
+              </div>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ====== Ch1-Slide3: Analysis results ====== -->
+        <div class="slide" id="s3">
+          <div class="chat-area">
+            <div class="user-bubble-row"><div class="user-bubble">按厂商统计NL2SQL准确率(%)</div></div>
+            <div class="msg"><div class="msg-avatar ai">D</div><div class="msg-body"><div class="msg-name">DataBrain</div>
+              <div class="msg-bubble" style="padding:0;overflow:hidden">
+                <div class="wf-steps" style="padding:10px 14px 0">
+                  <div class="wf-step done"><span class="ic">✓</span>意图理解</div><span class="wf-arrow">→</span>
+                  <div class="wf-step done"><span class="ic">✓</span>SQL生成</div><span class="wf-arrow">→</span>
+                  <div class="wf-step done"><span class="ic">✓</span>数据查询</div><span class="wf-arrow">→</span>
+                  <div class="wf-step done"><span class="ic">✓</span>可视化生成</div>
+                </div>
+                <div style="padding:10px 14px">
+                  <div class="report-card" style="margin-bottom:10px">
+                    <div class="report-header"><div class="report-title">📋 NL2SQL准确率(%)趋势分析报告</div><span class="report-badge">趋势报告</span></div>
+                    <div class="report-meta">报告类型：时间趋势分析 · 生成时间：2026-08-27 10:37 · 数据表：AI数析平台真实测评(in) · 核心指标：NL2SQL准确率(%) · 数据期数：30 期</div>
+                    <div class="metrics-grid">
+                      <div class="metric-card blue"><div class="metric-num">139,745</div><div class="metric-label">总记录数</div></div>
+                      <div class="metric-card green"><div class="metric-num">5,732</div><div class="metric-label">平均准确率</div></div>
+                      <div class="metric-card pink"><div class="metric-num">1,658</div><div class="metric-label">最高值</div></div>
+                      <div class="metric-card yellow"><div class="metric-num">3.9%</div><div class="metric-label">增长率</div></div>
+                    </div>
+                  </div>
+                  <div class="action-bar">
+                    <button class="action-btn">👍</button><button class="action-btn">👎</button>
+                    <button class="action-btn">↗️ 转发</button><button class="action-btn">📋 复制</button>
+                    <button class="action-btn primary" id="saveRptBtn">💾 保存为报表</button>
+                  </div>
+                </div>
+              </div>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ====== P2: 新建自然语言查询 ====== -->
+        <div class="slide" id="s4">
+          <div class="chat-area" id="convChat">
+            <!-- Previous report summary -->
+            <div class="msg" id="convPrev">
+              <div class="msg-avatar ai">D</div>
+              <div class="msg-body"><div class="msg-name">DataBrain</div>
+                <div class="msg-bubble">
+                  <div class="conv-mini-report"><div class="mini-title">📋 NL2SQL准确率(%)趋势分析报告</div><div style="font-size:11px;color:var(--muted)">趋势报告 · 139,745 总记录数 · 5,732 平均准确率 · 3.9% 增长率</div></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Q2: 上个月销售额最高的产品 -->
+            <div class="conv-section" id="convQ2" style="display:none">
+              <div class="user-bubble-row"><div class="user-bubble">上个月销售额最高的产品是什么？</div></div>
+            </div>
+            <div class="msg" id="convSQL2" style="display:none">
+              <div class="msg-avatar ai">D</div><div class="msg-body"><div class="msg-name">DataBrain</div>
+                <div class="msg-bubble" style="padding:0;overflow:hidden">
+                  <div class="wf-steps" id="wfSteps2" style="padding:10px 14px 0">
+                    <div class="wf-step done"><span class="ic">✓</span>意图理解</div><span class="wf-arrow">→</span>
+                    <div class="wf-step active"><span class="ic">⟳</span>SQL生成</div><span class="wf-arrow">→</span>
+                    <div class="wf-step pending"><span class="ic">3</span>数据查询</div><span class="wf-arrow">→</span>
+                    <div class="wf-step pending"><span class="ic">4</span>可视化生成</div>
+                  </div>
+                  <div style="background:var(--code-bg);padding:14px 16px;font-family:'Fira Code','Courier New',monospace;font-size:12px;line-height:1.8;color:#E0E0E0">
+                    <span class="cm">-- 上个月销售额最高的产品</span><br><span class="kw">SELECT</span> product_name, <span class="fn">SUM</span>(sales_amount) <span class="kw">AS</span> <span class="str">'总销售额'</span><br><span class="kw">FROM</span> <span class="id">sales_order</span><br><span class="kw">WHERE</span> order_date <span class="kw">BETWEEN</span> <span class="str">'2025-07-01'</span> <span class="kw">AND</span> <span class="str">'2025-07-31'</span><br><span class="kw">GROUP BY</span> product_name<br><span class="kw">ORDER BY</span> <span class="str">'总销售额'</span> <span class="kw">DESC</span><br><span class="kw">LIMIT</span> 5;
+                  </div>
+                  <div class="sql-actions"><button class="sql-btn regen">↻ 重新生成</button><button class="sql-btn exec" id="execBtn2b">▶ 确认执行</button></div>
+                  <div id="convRes2" style="display:none;padding:10px 14px">
+                    <div class="report-card">
+                      <div class="report-header"><div class="report-title">🏆 产品销售额排名报告</div><span class="report-badge">排名报告</span></div>
+                      <div class="report-meta">报告类型：排名分析 · 生成时间：2025-08-27 10:42</div>
+                      <div class="metrics-grid">
+                        <div class="metric-card green"><div class="metric-num">¥1,285K</div><div class="metric-label">总销售额</div></div>
+                        <div class="metric-card yellow"><div class="metric-num">42</div><div class="metric-label">订单数</div></div>
+                        <div class="metric-card pink"><div class="metric-num">¥30.6K</div><div class="metric-label">平均单价</div></div>
+                        <div class="metric-card blue"><div class="metric-num">5</div><div class="metric-label">产品数</div></div>
+                      </div>
+                      <table class="rank-table">
+                        <thead><tr><th>#</th><th>产品名称</th><th>占比</th><th>金额</th></tr></thead>
+                        <tbody>
+                          <tr><td style="font-weight:700;color:var(--orange)">1</td><td>智能手表 Pro</td><td><div class="rank-bar" style="width:100%"></div></td><td style="font-weight:600;color:var(--brand)">¥458,200</td></tr>
+                          <tr><td style="font-weight:700;color:var(--muted)">2</td><td>无线耳机 Max</td><td><div class="rank-bar" style="width:68%;opacity:.7"></div></td><td style="font-weight:600;color:var(--brand)">¥312,500</td></tr>
+                          <tr><td style="font-weight:700;color:#CD7F32">3</td><td>智能音箱 Mini</td><td><div class="rank-bar" style="width:45%;opacity:.55"></div></td><td style="font-weight:600;color:var(--brand)">¥205,800</td></tr>
+                          <tr><td style="font-weight:700;color:var(--muted)">4</td><td>便携充电宝</td><td><div class="rank-bar" style="width:28%;opacity:.4"></div></td><td style="font-weight:600;color:var(--brand)">¥128,300</td></tr>
+                          <tr><td style="font-weight:700;color:var(--muted)">5</td><td>蓝牙键盘</td><td><div class="rank-bar" style="width:18%;opacity:.3"></div></td><td style="font-weight:600;color:var(--brand)">¥80,200</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Q3: 品类对比 -->
+            <div class="conv-section" id="convQ3" style="display:none">
+              <div class="user-bubble-row"><div class="user-bubble">那按品类对比呢？</div></div>
+            </div>
+            <div class="msg" id="convSQL3" style="display:none">
+              <div class="msg-avatar ai">D</div><div class="msg-body"><div class="msg-name">DataBrain</div>
+                <div class="msg-bubble" style="padding:0;overflow:hidden">
+                  <div class="wf-steps" id="wfSteps3" style="padding:10px 14px 0">
+                    <div class="wf-step done"><span class="ic">✓</span>意图理解</div><span class="wf-arrow">→</span>
+                    <div class="wf-step active"><span class="ic">⟳</span>SQL生成</div><span class="wf-arrow">→</span>
+                    <div class="wf-step pending"><span class="ic">3</span>数据查询</div><span class="wf-arrow">→</span>
+                    <div class="wf-step pending"><span class="ic">4</span>可视化生成</div>
+                  </div>
+                  <div style="background:var(--code-bg);padding:14px 16px;font-family:'Fira Code','Courier New',monospace;font-size:12px;line-height:1.8;color:#E0E0E0">
+                    <span class="cm">-- 按品类对比销售额</span><br><span class="kw">SELECT</span> category, <span class="fn">SUM</span>(sales_amount) <span class="kw">AS</span> <span class="str">'总销售额'</span><br><span class="kw">FROM</span> <span class="id">sales_order</span><br><span class="kw">GROUP BY</span> category<br><span class="kw">ORDER BY</span> <span class="str">'总销售额'</span> <span class="kw">DESC</span>;
+                  </div>
+                  <div class="sql-actions"><button class="sql-btn regen">↻ 重新生成</button><button class="sql-btn exec" id="execBtn3b">▶ 确认执行</button></div>
+                  <div id="convRes3" style="display:none;padding:10px 14px">
+                    <div class="report-card">
+                      <div class="report-header"><div class="report-title">📊 品类销售额对比报告</div><span class="report-badge">对比报告</span></div>
+                      <div class="report-meta">报告类型：分类对比 · 生成时间：2025-08-27 10:45</div>
+                      <table class="rank-table">
+                        <thead><tr><th>#</th><th>品类</th><th>占比</th><th>金额</th></tr></thead>
+                        <tbody>
+                          <tr><td style="font-weight:700;color:var(--orange)">1</td><td>智能穿戴</td><td><div class="rank-bar" style="width:100%"></div></td><td style="font-weight:600;color:var(--brand)">¥664,000</td></tr>
+                          <tr><td style="font-weight:700;color:var(--muted)">2</td><td>音频设备</td><td><div class="rank-bar" style="width:47%;opacity:.7"></div></td><td style="font-weight:600;color:var(--brand)">¥312,500</td></tr>
+                          <tr><td style="font-weight:700;color:#CD7F32">3</td><td>配件</td><td><div class="rank-bar" style="width:31%;opacity:.55"></div></td><td style="font-weight:600;color:var(--brand)">¥208,500</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                  <div class="action-bar" style="padding:8px 14px;border-top:1px solid var(--border)">
+                    <button class="action-btn">👍</button><button class="action-btn">👎</button>
+                    <button class="action-btn">↗️ 转发</button><button class="action-btn">📋 复制</button>
+                    <button class="action-btn primary" id="saveRptBtn2">💾 保存为报表</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== P3: Smart reports list ====== -->
+        <div class="slide" id="sRpt">
+          <div class="page-header"><div class="page-title">📊 智能报表</div><button class="btn-primary">+ 新建报表</button></div>
+          <!-- Search + filter -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="position:relative">
+                <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;color:var(--muted-2)">🔍</span>
+                <input type="text" placeholder="搜索报表名称..." style="padding:7px 12px 7px 32px;border:1px solid var(--border);border-radius:8px;font-size:12px;width:220px;outline:none">
+              </div>
+              <span style="padding:5px 14px;border-radius:6px;background:var(--brand);color:#fff;font-size:12px;font-weight:600;cursor:pointer">全部</span>
+              <span style="padding:5px 14px;border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer">最近7天</span>
+              <span style="padding:5px 14px;border-radius:6px;font-size:12px;color:var(--muted);cursor:pointer">本月</span>
+            </div>
+            <div style="font-size:12px;color:var(--muted)">共 3 条数据</div>
+          </div>
+          <!-- 3-column card grid -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+            <!-- Card 1: 产品销售额排名分析 (NEW, highlighted) -->
+            <div class="rpt-card new-card" id="rpt1" style="cursor:pointer;transition:all .2s">
+              <div class="rpt-card-chart">
+                <span class="new-badge">NEW</span>
+                <div class="bar" style="height:90%"></div>
+                <div class="bar" style="height:62%;opacity:.7"></div>
+                <div class="bar" style="height:42%;opacity:.55"></div>
+                <div class="bar" style="height:28%;opacity:.4"></div>
+                <div class="bar" style="height:18%;opacity:.3"></div>
+              </div>
+              <div class="rpt-card-body">
+                <span class="rpt-card-tag">排名分析</span>
+                <div class="rpt-card-title">产品销售额排名分析</div>
+                <div class="rpt-card-desc">基于 42 行订单数据，智能手表 Pro 销售额最高（¥458,200），占总销售额 35.6%。</div>
+                <div class="rpt-card-meta"><span>📅 2026-08-27 15:25</span><span class="sep"></span><span>📋 sales_order</span></div>
+                <div class="rpt-card-actions">
+                  <button class="btn btn-view" id="rptView1">查看</button>
+                  <button class="btn btn-export" id="rptPdf1">导出 PDF</button>
+                  <button class="btn btn-delete" id="rptDel1">删除</button>
+                </div>
+              </div>
+            </div>
+            <!-- Card 2: 用户信息表 — 记录数分析 -->
+            <div class="rpt-card" id="rpt2" style="cursor:pointer;transition:all .2s">
+              <div class="rpt-card-chart">
+                <div class="bar" style="height:85%"></div>
+                <div class="bar" style="height:70%;opacity:.7"></div>
+                <div class="bar" style="height:50%;opacity:.55"></div>
+                <div class="bar" style="height:35%;opacity:.4"></div>
+                <div class="bar" style="height:20%;opacity:.3"></div>
+              </div>
+              <div class="rpt-card-body">
+                <span class="rpt-card-tag" style="background:#E0F2FE;color:#0284C7">分组统计</span>
+                <div class="rpt-card-title">用户信息表 — 记录数分析</div>
+                <div class="rpt-card-desc">基于 200 行真实数据，记录数整体呈下降趋势，环比 -50%，检测到1次异常波动。</div>
+                <div class="rpt-card-meta"><span>📅 2026-08-27 11:40</span><span class="sep"></span><span>📋 user_info</span></div>
+                <div class="rpt-card-actions">
+                  <button class="btn btn-view" id="rptView2">查看</button>
+                  <button class="btn btn-export" id="rptPdf2">导出 PDF</button>
+                  <button class="btn btn-delete" id="rptDel2">删除</button>
+                </div>
+              </div>
+            </div>
+            <!-- Card 3: 品类销售额对比 -->
+            <div class="rpt-card" id="rpt3" style="cursor:pointer;transition:all .2s">
+              <div class="rpt-card-chart">
+                <div class="bar" style="height:60%"></div>
+                <div class="bar" style="height:95%"></div>
+                <div class="bar" style="height:40%"></div>
+              </div>
+              <div class="rpt-card-body">
+                <span class="rpt-card-tag" style="background:var(--success-light);color:var(--success)">对比分析</span>
+                <div class="rpt-card-title">品类销售额对比</div>
+                <div class="rpt-card-desc">基于 120 行销售数据，3C 数码类销售额最高，占比 45.2%，食品类环比增长 12%。</div>
+                <div class="rpt-card-meta"><span>📅 2026-08-25 16:40</span><span class="sep"></span><span>📋 sales_order</span></div>
+                <div class="rpt-card-actions">
+                  <button class="btn btn-view" id="rptView3">查看</button>
+                  <button class="btn btn-export" id="rptPdf3">导出 PDF</button>
+                  <button class="btn btn-delete" id="rptDel3">删除</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== Ch3-Slide1: Data source - upload ====== -->
+        <div class="slide" id="s5">
+          <div class="page-header"><div class="page-title">🗄️ 数据源管理</div><button class="btn-primary" id="addBtn2">+ 手动添加表</button></div>
+          <div class="upload-section">
+            <div class="upload-title">📤 上传数据文件</div>
+            <div class="upload-desc">支持 CSV / Excel (.xlsx / .xls) 格式，本地解析不上传服务器</div>
+            <div class="upload-features"><span class="feature-badge">✅ .csv / .xlsx / .xls</span><span class="feature-badge">✅ 首行作为字段名</span><span class="feature-badge">✅ 自动推断字段类型</span></div>
+            <div class="dropzone" id="dropzone2"><div class="dropzone-icon">📊</div><div class="dropzone-text">点击或拖拽 CSV/Excel 文件到此处</div></div>
+          </div>
+          <div class="table-list">
+            <div class="table-list-header"><div style="font-size:14px;font-weight:700">📋 已配置的表</div><div style="font-size:12px;color:var(--muted)" id="tListCount2">共 0 张表</div></div>
+            <table class="data-table"><thead><tr><th>表名</th><th>别名</th><th>字段数</th><th>数据行</th><th>描述</th><th>操作</th></tr></thead>
+              <tbody id="dsBody"><tr id="emptyRow2"><td colspan="6" style="text-align:center;color:var(--muted-2);padding:24px">暂无已配置的表</td></tr>
+                <tr id="aiinRow" style="display:none"><td>aiin</td><td>AI分析平台真实测评</td><td>15</td><td>10</td><td>从CSV导入</td><td><span class="action-link" id="prevLink2">预览</span> · <span class="action-link" id="editLink2">编辑</span> · <span class="action-link danger">删除</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="parse-box" id="parseBox2" style="display:none">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="font-size:20px">📄</span><div><div style="font-size:13px;font-weight:600">AI分析平台真实测评(in).csv</div><div style="font-size:11px;color:var(--muted)" id="parseText2">正在解析...</div></div></div>
+            <div class="parse-bar-track"><div class="parse-bar-fill" id="parseBar2"></div></div>
+          </div>
+        </div>
+
+        <!-- ====== Ch3-Slide2: Add table modal ====== -->
+        <div class="slide" id="s6">
+          <div class="page-header"><div class="page-title">🗄️ 数据源管理</div><button class="btn-primary">+ 手动添加表</button></div>
+          <div class="table-list">
+            <div class="table-list-header"><div style="font-size:14px;font-weight:700">📋 已配置的表</div><div style="font-size:12px;color:var(--muted)">共 2 张表</div></div>
+            <table class="data-table"><thead><tr><th>表名</th><th>别名</th><th>字段数</th><th>数据行</th><th>描述</th><th>操作</th></tr></thead>
+              <tbody>
+                <tr class="new-row"><td>sales_order</td><td>销售订单表</td><td>1</td><td>0</td><td>-</td><td><span class="action-link">预览</span> · <span class="action-link">编辑</span> · <span class="action-link danger">删除</span></td></tr>
+                <tr><td>aiin</td><td>AI分析平台真实测评</td><td>15</td><td>10</td><td>从CSV导入</td><td><span class="action-link">预览</span> · <span class="action-link">编辑</span> · <span class="action-link danger">删除</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ====== Ch4-Slide1: Data dictionary ====== -->
+        <div class="slide" id="s7">
+          <div class="dict-layout">
+            <div class="dict-left">
+              <div class="dict-search"><input type="text" placeholder="搜索表名、字段名..."></div>
+              <div class="dict-label">示例数据</div>
+              <div class="dict-table-item active"><div class="tn">sales_order</div><div class="cn">销售订单表</div></div>
+              <div class="dict-table-item"><div class="tn">user_info</div><div class="cn">用户信息表</div></div>
+              <div class="dict-table-item"><div class="tn">product_info</div><div class="cn">商品信息表</div></div>
+            </div>
+            <div class="dict-right">
+              <div class="dict-header"><div class="dict-title">📋 数据字典</div><span class="dict-mgr-link" id="mgrLink2">管理数据源 →</span></div>
+              <div style="font-size:20px;font-weight:700;font-family:'Courier New',monospace;margin-bottom:4px">sales_order</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:14px">销售订单表 · 系统内置示例数据</div>
+              <table class="dict-fields">
+                <thead><tr><th>字段名</th><th>类型</th><th>说明</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="fn">order_id</span><span class="pk-badge">PK</span></td><td><span class="type-tag num">bigint</span></td><td>订单ID</td></tr>
+                  <tr><td><span class="fn">user_id</span></td><td><span class="type-tag num">bigint</span></td><td>用户ID</td></tr>
+                  <tr><td><span class="fn">product_id</span></td><td><span class="type-tag num">bigint</span></td><td>商品ID</td></tr>
+                  <tr><td><span class="fn">order_date</span></td><td><span class="type-tag date">date</span></td><td>下单日期</td></tr>
+                  <tr><td><span class="fn">sale_amount</span></td><td><span class="type-tag text">decimal(12,2)</span></td><td>销售金额</td></tr>
+                </tbody>
+              </table>
+              <div class="dict-actions"><button class="btn-go" id="goQueryBtn2">去查询 →</button><button class="btn-edit" id="editBtn2">编辑表结构</button></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ====== Ch4-Slide2: Query page (with tooltip) ====== -->
+        <div class="slide" id="s8">
+          <div class="query-empty">
+            <h2>上传你的数据文件开始分析</h2>
+            <p>支持 CSV / XLSX / XLS 格式，文件仅在浏览器本地解析，不会上传服务器</p>
+            <div class="query-dropzone"><div style="font-size:32px;margin-bottom:8px">📁</div><div style="font-size:13px;color:var(--muted)">点击或拖拽文件到此处上传</div><div style="font-size:13px;color:var(--brand);font-weight:600">支持 .csv / .xlsx / .xls 文件</div></div>
+          </div>
+        </div>
+
+        <!-- ====== Ch5-Slide1: History - SQL generation ====== -->
+        <div class="slide" id="s9">
+          <div class="chat-area">
+            <div class="msg"><div class="msg-avatar user">张</div><div class="msg-body"><div class="msg-name">我</div><div class="msg-bubble">品类利润排名前5</div></div></div>
+            <div class="msg"><div class="msg-avatar ai">D</div><div class="msg-body"><div class="msg-name">DataBrain</div>
+              <div class="msg-bubble" style="padding:0;overflow:hidden">
+                <div class="wf-steps" style="padding:10px 14px 0">
+                  <div class="wf-step done"><span class="ic">✓</span>意图理解</div><span class="wf-arrow">→</span>
+                  <div class="wf-step active"><span class="ic">⟳</span>SQL生成</div><span class="wf-arrow">→</span>
+                  <div class="wf-step pending"><span class="ic">3</span>数据查询</div><span class="wf-arrow">→</span>
+                  <div class="wf-step pending"><span class="ic">4</span>可视化生成</div>
+                </div>
+                <div style="background:var(--code-bg);padding:14px 16px;font-family:'Fira Code','Courier New',monospace;font-size:12px;line-height:1.8;color:#E0E0E0">
+                  <span class="cm">-- 销售订单表，商品品类 Top 5 利润</span><br><span class="kw">SELECT</span> category <span class="kw">AS</span> <span class="str">'商品品类'</span>,<br>&nbsp;&nbsp;<span class="fn">SUM</span>(profit) <span class="kw">AS</span> <span class="str">'利润'</span>,<br>&nbsp;&nbsp;<span class="fn">COUNT</span>(*) <span class="kw">AS</span> <span class="str">'记录数'</span><br><span class="kw">FROM</span> <span class="id">sales_order</span><br><span class="kw">GROUP BY</span> category<br><span class="kw">ORDER BY</span> <span class="str">`利润`</span> <span class="kw">DESC</span><br><span class="kw">LIMIT</span> 5;
+                </div>
+                <div class="sql-actions"><button class="sql-btn regen">↻ 重新生成</button><button class="sql-btn exec" id="execBtn2">▶ 确认执行</button></div>
+              </div>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ====== Ch5-Slide2: History results + bar chart ====== -->
+        <div class="slide" id="s10">
+          <div class="chat-area">
+            <div class="msg"><div class="msg-avatar user">张</div><div class="msg-body"><div class="msg-name">我</div><div class="msg-bubble">品类利润排名前5</div></div></div>
+            <div class="msg"><div class="msg-avatar ai">D</div><div class="msg-body"><div class="msg-name">DataBrain</div>
+              <div class="msg-bubble" style="padding:0;overflow:hidden">
+                <div class="wf-steps" style="padding:10px 14px 0">
+                  <div class="wf-step done"><span class="ic">✓</span>意图理解</div><span class="wf-arrow">→</span>
+                  <div class="wf-step done"><span class="ic">✓</span>SQL生成</div><span class="wf-arrow">→</span>
+                  <div class="wf-step done"><span class="ic">✓</span>数据查询</div><span class="wf-arrow">→</span>
+                  <div class="wf-step active"><span class="ic">⟳</span>可视化生成</div>
+                </div>
+                <div style="padding:10px 14px">
+                  <div class="data-card"><div class="data-card-head">📋 查询结果 · 共 5 条记录</div>
+                    <table class="data-tbl"><thead><tr><th>商品品类</th><th style="text-align:right">利润 (¥)</th><th style="text-align:right">记录数</th></tr></thead>
+                      <tbody>
+                        <tr><td>电子产品</td><td class="num">128,450</td><td class="num">342</td></tr>
+                        <tr><td>家居用品</td><td class="num">96,780</td><td class="num">518</td></tr>
+                        <tr><td>服装鞋帽</td><td class="num">85,230</td><td class="num">677</td></tr>
+                        <tr><td>食品饮料</td><td class="num">72,100</td><td class="num">893</td></tr>
+                        <tr><td>图书文娱</td><td class="num">54,680</td><td class="num">215</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="chart-card"><div class="chart-card-head">📊 品类利润排名</div><div class="chart-body">
+                    <div class="bar-chart" id="barChart2">
+                      <div class="bar-row"><span class="bar-label">电子产品</span><div class="bar-track"><div class="bar-fill c1" style="width:0" data-w="100">¥128,450</div></div></div>
+                      <div class="bar-row"><span class="bar-label">家居用品</span><div class="bar-track"><div class="bar-fill c2" style="width:0" data-w="75">¥96,780</div></div></div>
+                      <div class="bar-row"><span class="bar-label">服装鞋帽</span><div class="bar-track"><div class="bar-fill c3" style="width:0" data-w="66">¥85,230</div></div></div>
+                      <div class="bar-row"><span class="bar-label">食品饮料</span><div class="bar-track"><div class="bar-fill c4" style="width:0" data-w="56">¥72,100</div></div></div>
+                      <div class="bar-row"><span class="bar-label">图书文娱</span><div class="bar-track"><div class="bar-fill c5" style="width:0" data-w="43">¥54,680</div></div></div>
+                    </div>
+                  </div></div>
+                </div>
+              </div>
+            </div></div>
+          </div>
+        </div>
+
+        <!-- ====== Ch6-Slide1: New conversation empty ====== -->
+        <div class="slide" id="s11">
+          <div class="query-empty">
+            <h2>上传你的数据文件开始分析</h2>
+            <p>支持 CSV / XLSX / XLS 格式，文件仅在浏览器本地解析，不会上传服务器</p>
+            <div class="query-dropzone"><div style="font-size:32px;margin-bottom:8px">📁</div><div style="font-size:13px;color:var(--muted)">点击或拖拽文件到此处上传</div><div style="font-size:13px;color:var(--brand);font-weight:600">支持 .csv / .xlsx / .xls 文件</div></div>
+            <div style="margin-top:16px;font-size:12px;color:var(--muted)">还没有数据？点击下方体验示例指标 → <span style="color:var(--brand);font-weight:600;cursor:pointer">查看推荐问题 →</span></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="input-bar">
+        <div class="input-tooltip" id="inputTip">已从数据字典带入查询内容</div>
+        <div class="input-pill" id="inputPill"><span class="mic">🎤</span><span class="text" id="inputText">输入你的数据问题，或直接拖入 CSV/Excel 文件开始分析</span></div>
+        <div class="input-send" id="inputSend">↑</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Save Report Modal -->
+<div class="modal-ov" id="saveModal">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-title">📄 保存为报表</div><button class="modal-close" id="saveClose">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-desc">将当前查询结果保存为报表，可在「智能报表」页面随时查看和管理。</div>
+      <div class="modal-label">报表名称</div>
+      <input type="text" class="modal-input" id="saveInput" value="NL2SQL准确率(%)趋势分析">
+      <div class="modal-meta"><span class="meta-tag">类型：趋势分析</span><span class="meta-tag">维度：日期</span><span class="meta-tag">指标：NL2SQL准确率</span></div>
+    </div>
+    <div class="modal-footer"><button class="modal-btn cancel" id="saveCancel">取消</button><button class="modal-btn confirm" id="saveConfirm">确认保存</button></div>
+  </div>
+</div>
+
+<!-- Edit Structure Modal -->
+<div class="modal-ov" id="editModal2">
+  <div class="modal" style="width:520px">
+    <div class="modal-header"><div class="modal-title">✏️ 编辑表: sales_order</div><button class="modal-close" id="editClose2">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">表名</div><input class="form-input" value="sales_order" readonly="" style="background:var(--bg-2);color:var(--muted)"></div>
+      <div class="form-group"><div class="form-row"><div><div class="form-label">中文别名</div><input class="form-input" value="销售订单表"></div><div><div class="form-label">业务域</div><select class="type-select" style="height:36px"><option>示例</option></select></div></div></div>
+      <div class="form-group"><div class="form-label">表描述</div><textarea class="form-textarea">系统内置示例数据，可直接体验。</textarea></div>
+      <div class="form-group"><div class="form-label">字段列表</div>
+        <div class="field-header"><span>字段名</span><span>数据类型</span><span>字段描述</span><span></span></div>
+        <div class="field-row"><input class="form-input" value="order_id" style="font-size:12px;padding:6px 8px"><select class="type-select" style="font-size:12px;padding:6px 8px"><option>bigint</option></select><input class="form-input" value="订单ID" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+        <div class="field-row"><input class="form-input" value="user_id" style="font-size:12px;padding:6px 8px"><select class="type-select" style="font-size:12px;padding:6px 8px"><option>bigint</option></select><input class="form-input" value="用户ID" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+        <button class="modal-add-link" style="margin-top:8px">+ 添加字段</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="modal-btn cancel" id="editCancel2">取消</button><button class="modal-btn confirm" id="editSave2">保存</button></div>
+  </div>
+</div>
+
+<!-- Add Table Modal -->
+<div class="modal-ov" id="addModal2">
+  <div class="modal" style="width:480px">
+    <div class="modal-header"><div class="modal-title">📋 添加表</div><button class="modal-close" id="addClose2">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">表名 (英文)</div><input type="text" class="form-input" id="tnInput2" placeholder="如 sales_order"></div>
+      <div class="form-group"><div class="form-row"><div><div class="form-label">中文别名</div><input type="text" class="form-input" id="alInput2" placeholder="如 销售订单表"></div><div><div class="form-label">业务域</div><select class="type-select" style="height:36px"><option>自定义</option></select></div></div></div>
+      <div class="form-group"><div class="form-label">字段列表</div>
+        <div class="field-header"><span>字段名</span><span>数据类型</span><span>字段描述</span><span></span></div>
+        <div class="field-row"><input type="text" class="form-input" id="fnInput2" placeholder="字段名" style="font-size:12px;padding:6px 8px"><select class="type-select" style="font-size:12px;padding:6px 8px"><option>varchar(50)</option><option>int</option></select><input type="text" class="form-input" id="fdInput2" placeholder="字段描述" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+        <button class="modal-add-link" style="margin-top:8px">+ 添加字段</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="modal-btn cancel" id="addCancel2">取消</button><button class="modal-btn confirm" id="saveBtn2">保存</button></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<!-- Preview Modal -->
+<div class="modal-ov" id="previewModal2">
+  <div class="modal" style="width:560px">
+    <div class="modal-header"><div class="modal-title">👁️ 数据预览 · aiin</div><button class="modal-close" id="prevClose2">✕</button></div>
+    <div class="modal-body">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px">共 10 行 · 15 个字段 · 显示前 5 行</div>
+      <div style="overflow-x:auto">
+        <table class="preview-tbl">
+          <thead><tr><th>model</th><th>company</th><th>type</th><th>score</th><th>price</th></tr></thead>
+          <tbody>
+            <tr><td>GPT-4o</td><td>OpenAI</td><td>闭源</td><td class="num">88.7</td><td class="num">$2.50</td></tr>
+            <tr><td>Claude 3.5</td><td>Anthropic</td><td>闭源</td><td class="num">87.3</td><td class="num">$3.00</td></tr>
+            <tr><td>Gemini 1.5</td><td>Google</td><td>闭源</td><td class="num">85.6</td><td class="num">$1.25</td></tr>
+            <tr><td>Qwen2.5</td><td>阿里云</td><td>开源</td><td class="num">84.2</td><td class="num">$0.50</td></tr>
+            <tr><td>DeepSeek</td><td>深度求索</td><td>开源</td><td class="num">82.9</td><td class="num">$0.14</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="modal-btn cancel" id="prevCancel2">关闭</button></div>
+  </div>
+</div>
+
+<!-- Edit Table Modal (for data source edit) -->
+<div class="modal-ov" id="editTableModal2">
+  <div class="modal" style="width:520px">
+    <div class="modal-header"><div class="modal-title">✏️ 编辑表: aiin</div><button class="modal-close" id="editTblClose2">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group"><div class="form-label">表名</div><input class="form-input" value="aiin" readonly="" style="background:var(--bg-2);color:var(--muted)"></div>
+      <div class="form-group"><div class="form-row"><div><div class="form-label">中文别名</div><input class="form-input" value="AI分析平台真实测评"></div><div><div class="form-label">业务域</div><select class="type-select" style="height:36px"><option>AI评测</option></select></div></div></div>
+      <div class="form-group"><div class="form-label">表描述</div><textarea class="form-textarea">AI模型综合能力评测数据，包含模型名称、厂商、类型、评分等。</textarea></div>
+      <div class="form-group"><div class="form-label">字段列表</div>
+        <div class="field-header"><span>字段名</span><span>数据类型</span><span>字段描述</span><span></span></div>
+        <div class="field-row"><input class="form-input" value="model" style="font-size:12px;padding:6px 8px"><select class="type-select" style="font-size:12px;padding:6px 8px"><option>varchar(50)</option></select><input class="form-input" value="模型名称" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+        <div class="field-row"><input class="form-input" value="company" style="font-size:12px;padding:6px 8px"><select class="type-select" style="font-size:12px;padding:6px 8px"><option>varchar(50)</option></select><input class="form-input" value="厂商" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+        <div class="field-row"><input class="form-input" value="score" style="font-size:12px;padding:6px 8px"><select class="type-select" style="font-size:12px;padding:6px 8px"><option>decimal(5,1)</option></select><input class="form-input" value="综合评分" style="font-size:12px;padding:6px 8px"><button class="field-del">✕</button></div>
+        <button class="modal-add-link" style="margin-top:8px">+ 添加字段</button>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="modal-btn cancel" id="editTblCancel2">取消</button><button class="modal-btn confirm" id="editTblSave2">保存</button></div>
+  </div>
+</div>
+
+<!-- Report Detail Modal -->
+<div class="modal-ov" id="rptDetailModal">
+  <div class="modal" style="width:680px">
+    <div class="modal-header"><div class="modal-title" id="rptDetailTitle">📊 报表详情</div><button class="modal-close" id="rptDetailClose">✕</button></div>
+    <div class="modal-body" id="rptDetailBody">
+      <!-- Report metadata -->
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px;padding:8px 12px;background:var(--bg-2);border-radius:8px" id="rptDetailMeta">报告类型：排名分析 · 生成时间：2026-08-27 15:25 · 数据源：sales_order</div>
+      <!-- Metrics -->
+      <div class="metrics-grid" id="rptDetailMetrics">
+        <div class="metric-card green"><div class="metric-num">¥1,285K</div><div class="metric-label">总销售额</div></div>
+        <div class="metric-card yellow"><div class="metric-num">42</div><div class="metric-label">订单数</div></div>
+        <div class="metric-card pink"><div class="metric-num">¥30.6K</div><div class="metric-label">平均单价</div></div>
+        <div class="metric-card blue"><div class="metric-num">5</div><div class="metric-label">产品数</div></div>
+      </div>
+      <!-- Data table -->
+      <div style="margin-top:16px">
+        <div style="font-size:14px;font-weight:700;margin-bottom:10px">📈 产品销售额排名明细</div>
+        <table class="rank-table" id="rptDetailTable">
+          <thead><tr><th>#</th><th>产品名称</th><th>占比</th><th>金额</th></tr></thead>
+          <tbody>
+            <tr><td style="font-weight:700;color:var(--orange)">1</td><td>智能手表 Pro</td><td><div class="rank-bar" style="width:100%"></div></td><td style="font-weight:600;color:var(--brand)">¥458,200</td></tr>
+            <tr><td style="font-weight:700;color:var(--muted)">2</td><td>无线耳机 Max</td><td><div class="rank-bar" style="width:68%;opacity:.7"></div></td><td style="font-weight:600;color:var(--brand)">¥312,500</td></tr>
+            <tr><td style="font-weight:700;color:#CD7F32">3</td><td>智能音箱 Mini</td><td><div class="rank-bar" style="width:45%;opacity:.55"></div></td><td style="font-weight:600;color:var(--brand)">¥205,800</td></tr>
+            <tr><td style="font-weight:700;color:var(--muted)">4</td><td>便携充电宝</td><td><div class="rank-bar" style="width:28%;opacity:.4"></div></td><td style="font-weight:600;color:var(--brand)">¥128,300</td></tr>
+            <tr><td style="font-weight:700;color:var(--muted)">5</td><td>蓝牙键盘</td><td><div class="rank-bar" style="width:18%;opacity:.3"></div></td><td style="font-weight:600;color:var(--brand)">¥80,200</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <!-- Insights -->
+      <div style="margin-top:16px;padding:12px 14px;background:var(--brand-light);border-radius:8px;border-left:3px solid var(--brand)">
+        <div style="font-size:12px;font-weight:700;color:var(--brand);margin-bottom:4px">💡 智能洞察</div>
+        <div style="font-size:12px;color:var(--ink-2);line-height:1.6">智能手表 Pro 销售额最高（¥458,200），占总销售额 35.6%。Top 3 产品占总销售额的 76.1%，头部效应显著。建议关注智能穿戴品类的高增长趋势。</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="modal-btn cancel" id="rptDetailCancel">关闭</button>
+      <button class="modal-btn confirm" id="rptDetailExport">📤 导出 PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">保存成功</div>
+
+<!-- End Overlay -->
+<div class="end-ov" id="endOv">
+  <div class="end-icon">🚀</div>
+  <h2>DataBrain 完整功能演示完成！</h2>
+  <p>上传解析与指标分析 → 新建自然语言查询 → 数据源管理 → 数据字典 → 历史对话 → 新建对话</p>
+  <button class="end-btn" onclick="restart()">↻ 重新播放</button>
+</div>
+
+<!-- Cursor -->
+<div class="cursor" id="cursor">
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 3.21V20.8c0 .45.54.67.85.35l4.86-4.86a.5.5 0 0 1 .35-.15h6.87a.5.5 0 0 0 .35-.85L6.35 2.85a.5.5 0 0 0-.85.36z" fill="#7C3AED" stroke="white" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+  <div class="ring"></div>
+</div>
+
+<script>
+(function(){
+  var cursor=document.getElementById('cursor');
+  var pFill=document.getElementById('pFill');
+  var cStep=document.getElementById('cStep');
+  var playBtn=document.getElementById('playBtn');
+  var repBtn=document.getElementById('repBtn');
+  var topPage=document.getElementById('topPage');
+  var tBadge=document.getElementById('tBadge');
+  var chapterTag=document.getElementById('chapterTag');
+  var navQuery=document.getElementById('navQuery');
+  var navReport=document.getElementById('navReport');
+  var navDS=document.getElementById('navDS');
+  var navDict=document.getElementById('navDict');
+  var inputText=document.getElementById('inputText');
+  var inputPill=document.getElementById('inputPill');
+  var inputSend=document.getElementById('inputSend');
+  var inputTip=document.getElementById('inputTip');
+  var saveModal=document.getElementById('saveModal');
+  var saveInput=document.getElementById('saveInput');
+  var saveConfirm=document.getElementById('saveConfirm');
+  var editModal2=document.getElementById('editModal2');
+  var editSave2=document.getElementById('editSave2');
+  var addModal2=document.getElementById('addModal2');
+  var previewModal2=document.getElementById('previewModal2');
+  var editTableModal2=document.getElementById('editTableModal2');
+  var editTblSave2=document.getElementById('editTblSave2');
+  var rptDetailModal=document.getElementById('rptDetailModal');
+  var toast=document.getElementById('toast');
+  var endOv=document.getElementById('endOv');
+  var newChatBtn=document.getElementById('newChatBtn');
+  var hist1=document.getElementById('hist1');
+  var hist2=document.getElementById('hist2');
+  var chHint=document.getElementById('chHint');
+  var qChip1=document.getElementById('qChip1');
+  var qChip2=document.getElementById('qChip2');
+  var qChip3=document.getElementById('qChip3');
+  var slides=[
+    document.getElementById('s1'),document.getElementById('s1b'),document.getElementById('s1c'),
+    document.getElementById('s2'),document.getElementById('s3'),document.getElementById('s4'),
+    document.getElementById('sRpt'),
+    document.getElementById('s5'),document.getElementById('s6'),document.getElementById('s7'),
+    document.getElementById('s8'),document.getElementById('s9'),document.getElementById('s10'),
+    document.getElementById('s11')
+  ];
+  var defaultText=inputText.textContent;
+  var timers=[];
+  var typeTimer=null;
+  var totalChapters=6;
+  var TOTAL = 106000;
+  var hintTimer=null;
+
+  function clr(){timers.forEach(function(t){clearTimeout(t);clearInterval(t)});timers=[];clearInterval(typeTimer);clearTimeout(hintTimer)}
+  function sch(fn,d){var t=setTimeout(fn,d);timers.push(t);return t}
+  function setChapter(ch){chapterTag.textContent='P'+ch;cStep.textContent=ch;pFill.style.width=(ch/totalChapters*100)+'%'}
+  function showHint(num,text){chHint.innerHTML='<span class="ch-num">第'+num+'部分</span>'+text;chHint.classList.add('show');hintTimer=setTimeout(function(){chHint.classList.remove('show')},2500);timers.push(hintTimer)}
+  function showCursor(){cursor.classList.add('vis')}
+  function hideCursor(){cursor.classList.remove('vis')}
+  function moveTo(el){
+    if(!el)return;
+    var r=el.getBoundingClientRect();
+    cursor.style.transition='left .8s cubic-bezier(.4,0,.2,1),top .8s cubic-bezier(.4,0,.2,1)';
+    cursor.style.left=(r.left+r.width*.5-12)+'px';
+    cursor.style.top=(r.top+r.height*.5-2)+'px';
+  }
+  function clickEl(el){
+    if(!el)return;
+    var r=el.getBoundingClientRect();
+    cursor.style.left=(r.left+r.width*.5-12)+'px';
+    cursor.style.top=(r.top+r.height*.5-2)+'px';
+    cursor.classList.add('click');
+    setTimeout(function(){cursor.classList.remove('click')},600);
+  }
+  function moveToXY(x,y){cursor.style.transition='left .8s cubic-bezier(.4,0,.2,1),top .8s cubic-bezier(.4,0,.2,1)';cursor.style.left=(x-12)+'px';cursor.style.top=(y-2)+'px'}
+  function showSlide(n){slides.forEach(function(s){s.classList.remove('active')});slides[n].classList.add('active')}
+  function setNav(active){[navQuery,navReport,navDS,navDict].forEach(function(n){n.classList.remove('active')});active.classList.add('active')}
+  function clearHistHL(){[hist1,hist2].forEach(function(h){h.classList.remove('hl','active')})}
+  function completeWF(wfId){var wf=document.getElementById(wfId);if(!wf)return;wf.querySelectorAll('.wf-step').forEach(function(s){s.classList.remove('active','pending');s.classList.add('done');var ic=s.querySelector('.ic');if(ic)ic.textContent='✓'})}
+  function clearHL(){[saveConfirm,editSave2,editTblSave2,document.getElementById('execBtn1'),document.getElementById('execBtn2'),document.getElementById('saveBtn2'),document.getElementById('saveRptBtn'),document.getElementById('saveRptBtn2'),document.getElementById('goQueryBtn2'),document.getElementById('editBtn2'),document.getElementById('mgrLink2'),document.getElementById('addBtn2'),document.getElementById('prevLink2'),document.getElementById('editLink2'),document.getElementById('execBtn2b'),document.getElementById('execBtn3b'),document.getElementById('rptView1'),document.getElementById('rptPdf2'),qChip1,qChip2,qChip3].forEach(function(el){if(el)el.classList.remove('hl')});var r1=document.getElementById('rpt1');if(r1){r1.style.borderColor='';r1.style.boxShadow=''}var r3=document.getElementById('rpt3');if(r3){r3.style.border='';r3.style.boxShadow=''}}
+  function typeIn(text,speed){
+    inputText.textContent='';inputText.classList.add('typed');var i=0;var s=speed||120;
+    clearInterval(typeTimer);
+    typeTimer=setInterval(function(){
+      if(i<text.length){inputText.innerHTML=text.substring(0,i+1)+'<span class="cursor-blink"></span>';i++}
+      else{clearInterval(typeTimer)}
+    },s);
+  }
+  function typeInInput2(el,text,sp){
+    el.value='';var i=0;var s=sp||70;
+    var t=setInterval(function(){if(i<text.length){el.value=text.substring(0,i+1);i++}else{clearInterval(t)}},s);
+    timers.push(t);
+  }
+  function openModal(m){m.classList.add('show')}
+  function closeModal(m){m.classList.remove('show')}
+  function animateBars(){
+    var bars=document.querySelectorAll('#barChart2 .bar-fill');
+    bars.forEach(function(b,i){setTimeout(function(){b.style.width=b.getAttribute('data-w')+'%'},i*200+100)});
+  }
+  function resetAll(){
+    clearHL();clearHistHL();
+    [saveModal,editModal2,addModal2,previewModal2,editTableModal2,rptDetailModal].forEach(function(m){m.classList.remove('show')});
+    toast.classList.remove('show');toast.textContent='保存成功';endOv.classList.remove('show');
+    inputTip.classList.remove('show');inputPill.classList.remove('hl');chHint.classList.remove('show');
+    inputSend.classList.remove('active','hl');inputText.textContent=defaultText;inputText.classList.remove('typed');
+    saveInput.classList.remove('hl');saveInput.value='NL2SQL准确率(%)趋势分析';
+    // Reset conversation sections
+    ['convQ2','convSQL2','convQ3','convSQL3','convRes2','convRes3'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none'});
+    // Reset wf steps to initial state
+    ['wfSteps2','wfSteps3'].forEach(function(id){var wf=document.getElementById(id);if(wf){var steps=wf.querySelectorAll('.wf-step');steps[1].className='wf-step active';steps[1].querySelector('.ic').textContent='⟳';steps[2].className='wf-step pending';steps[2].querySelector('.ic').textContent='3';steps[3].className='wf-step pending';steps[3].querySelector('.ic').textContent='4'}});
+    document.getElementById('parseBox2').style.display='none';
+    document.getElementById('emptyRow2').style.display='';
+    document.getElementById('aiinRow').style.display='none';
+    var dz=document.getElementById('dropzone2');if(dz)dz.classList.remove('hl');
+    var pb1b=document.getElementById('parseBar1b');if(pb1b)pb1b.style.width='0%';
+    var pt1b=document.getElementById('parseText1b');if(pt1b)pt1b.textContent='正在读取文件内容...';
+    var uz1=document.getElementById('uploadZone1');if(uz1){uz1.style.borderColor='';uz1.style.background=''};
+    newChatBtn.style.background='';newChatBtn.style.padding='';newChatBtn.style.borderRadius='';
+  }
+
+  function run(){
+    clr();hideCursor();resetAll();
+    showSlide(0);setNav(navQuery);topPage.textContent='💬 新建查询';
+    tBadge.className='table-badge empty';tBadge.textContent='0 张表';
+    setChapter(1);playBtn.textContent='⏸';
+
+    // ========== P1: 数据查询与导入 (0-26s) ==========
+    sch(function(){setChapter(1);showHint(1,'上传数据文件')},500);
+    // Step1: 点击上传区域
+    sch(function(){showCursor();moveTo(document.getElementById('uploadZone1'))},3500);
+    sch(function(){clickEl(document.getElementById('uploadZone1'));document.getElementById('uploadZone1').style.borderColor='var(--brand)';document.getElementById('uploadZone1').style.background='var(--brand-lighter)'},4500);
+    // Step2: 解析进度
+    sch(function(){showSlide(1)},5000);
+    sch(function(){document.getElementById('parseBar1b').style.width='30%';document.getElementById('parseText1b').textContent='正在读取文件内容... 30%'},5500);
+    sch(function(){document.getElementById('parseBar1b').style.width='65%';document.getElementById('parseText1b').textContent='正在解析数据结构... 65%'},6500);
+    sch(function(){document.getElementById('parseBar1b').style.width='100%';document.getElementById('parseText1b').textContent='解析完成 ✓'},7500);
+    sch(function(){tBadge.className='table-badge has';tBadge.textContent='1 张表'},7800);
+    // Step3: 导入成功 + 指标卡片
+    sch(function(){showSlide(2)},8500);
+    sch(function(){showCursor();moveTo(qChip1)},10000);
+    sch(function(){clickEl(qChip1);qChip1.classList.add('hl')},10800);
+    sch(function(){inputText.textContent='按厂商统计NL2SQL准确率(%)';inputText.classList.add('typed');inputSend.classList.add('active');qChip1.classList.remove('hl')},11200);
+    sch(function(){moveTo(inputSend)},12200);
+    sch(function(){clickEl(inputSend);inputSend.classList.add('hl')},12900);
+    sch(function(){hideCursor();inputSend.classList.remove('hl');inputText.textContent=defaultText;inputText.classList.remove('typed')},13300);
+    // Step4: SQL生成
+    sch(function(){showSlide(3)},13500);
+    sch(function(){showCursor();moveTo(document.getElementById('execBtn1'))},17000);
+    sch(function(){clickEl(document.getElementById('execBtn1'));document.getElementById('execBtn1').classList.add('hl')},17800);
+    sch(function(){hideCursor()},18200);
+    // Step5: 结果展示
+    sch(function(){showSlide(4)},18400);
+
+    // ========== P2: 新建自然语言查询 (21-35s) ==========
+    sch(function(){setChapter(2);showSlide(5);showHint(2,'新建自然语言查询')},21000);
+    // 光标直接移到输入框打字
+    sch(function(){showCursor();moveTo(inputPill)},23500);
+    sch(function(){clickEl(inputPill);inputPill.classList.add('hl')},24000);
+    sch(function(){typeIn('上个月销售额最高的产品是什么？',100)},24300);
+    // 发送第二个查询
+    sch(function(){inputSend.classList.add('active');moveTo(inputSend)},25800);
+    sch(function(){clickEl(inputSend);inputSend.classList.add('hl')},26300);
+    sch(function(){hideCursor();inputPill.classList.remove('hl');inputSend.classList.remove('hl');inputText.textContent=defaultText;inputText.classList.remove('typed')},26700);
+    // 显示第二个查询SQL生成
+    sch(function(){document.getElementById('convQ2').style.display='';document.getElementById('convSQL2').style.display='';document.getElementById('convSQL2').scrollIntoView({behavior:'smooth',block:'center'})},26900);
+    // 点击"确认执行"
+    sch(function(){showCursor();moveTo(document.getElementById('execBtn2b'))},27800);
+    sch(function(){clickEl(document.getElementById('execBtn2b'));document.getElementById('execBtn2b').classList.add('hl')},28300);
+    sch(function(){hideCursor();document.getElementById('execBtn2b').classList.remove('hl');completeWF('wfSteps2')},28900);
+    sch(function(){document.getElementById('convRes2').style.display='';document.getElementById('convRes2').scrollIntoView({behavior:'smooth',block:'center'})},29300);
+    // 光标再次移到输入框打字
+    sch(function(){showCursor();moveTo(inputPill)},29600);
+    sch(function(){clickEl(inputPill);inputPill.classList.add('hl')},30100);
+    sch(function(){typeIn('那按品类对比呢？',100)},30400);
+    // 发送第三个查询
+    sch(function(){inputSend.classList.add('active');moveTo(inputSend)},31600);
+    sch(function(){clickEl(inputSend);inputSend.classList.add('hl')},32100);
+    sch(function(){hideCursor();inputPill.classList.remove('hl');inputSend.classList.remove('hl');inputText.textContent=defaultText;inputText.classList.remove('typed')},32500);
+    // 显示第三个查询SQL生成
+    sch(function(){document.getElementById('convQ3').style.display='';document.getElementById('convSQL3').style.display='';document.getElementById('convSQL3').scrollIntoView({behavior:'smooth',block:'center'})},32700);
+    // 点击"确认执行"
+    sch(function(){showCursor();moveTo(document.getElementById('execBtn3b'))},33600);
+    sch(function(){clickEl(document.getElementById('execBtn3b'));document.getElementById('execBtn3b').classList.add('hl')},34100);
+    sch(function(){hideCursor();document.getElementById('execBtn3b').classList.remove('hl');completeWF('wfSteps3')},34700);
+    sch(function(){document.getElementById('convRes3').style.display='';document.getElementById('convRes3').scrollIntoView({behavior:'smooth',block:'center'})},35100);
+
+    // ========== P3: 智能报表管理 (35-49s) ==========
+    sch(function(){setChapter(3);showHint(3,'智能报表管理')},35500);
+    // 点击"保存为报表"
+    sch(function(){showCursor();moveTo(document.getElementById('saveRptBtn2'))},37500);
+    sch(function(){clickEl(document.getElementById('saveRptBtn2'));document.getElementById('saveRptBtn2').classList.add('hl')},38300);
+    sch(function(){openModal(saveModal);saveInput.value='品类销售额对比'},38600);
+    sch(function(){moveTo(saveInput)},39100);
+    sch(function(){clickEl(saveInput);saveInput.classList.add('hl')},39600);
+    sch(function(){saveInput.classList.remove('hl');moveTo(saveConfirm)},39900);
+    sch(function(){clickEl(saveConfirm);saveConfirm.classList.add('hl')},40400);
+    sch(function(){closeModal(saveModal);saveConfirm.classList.remove('hl');document.getElementById('saveRptBtn2').classList.remove('hl');toast.classList.add('show')},40800);
+    sch(function(){toast.classList.remove('show')},41600);
+    // 导航到智能报表
+    sch(function(){moveTo(navReport)},42000);
+    sch(function(){clickEl(navReport);setNav(navReport);topPage.textContent='📊 智能报表';tBadge.className='table-badge has';tBadge.textContent='3 张表'},42800);
+    sch(function(){showSlide(6);document.getElementById('rpt3').style.border='2px solid var(--success)';document.getElementById('rpt3').style.boxShadow='0 0 0 3px rgba(16,185,129,.2)'},43100);
+    sch(function(){document.getElementById('rpt3').style.border='';document.getElementById('rpt3').style.boxShadow=''},44100);
+    // 点击"查看"第一张报表 → 弹出报表详情
+    sch(function(){moveTo(document.getElementById('rptView1'))},44400);
+    sch(function(){clickEl(document.getElementById('rptView1'));document.getElementById('rptView1').classList.add('hl');document.getElementById('rpt1').style.borderColor='var(--brand)';document.getElementById('rpt1').style.boxShadow='0 0 0 3px var(--brand-light)';openModal(rptDetailModal)},45200);
+    sch(function(){closeModal(rptDetailModal);document.getElementById('rptView1').classList.remove('hl');document.getElementById('rpt1').style.borderColor='';document.getElementById('rpt1').style.boxShadow=''},46200);
+    // 点击"导出 PDF"第二张报表
+    sch(function(){moveTo(document.getElementById('rptPdf2'))},46600);
+    sch(function(){clickEl(document.getElementById('rptPdf2'));document.getElementById('rptPdf2').classList.add('hl')},47400);
+    sch(function(){document.getElementById('rptPdf2').classList.remove('hl');toast.textContent='导出成功';toast.classList.add('show')},47700);
+    sch(function(){toast.classList.remove('show');toast.textContent='保存成功'},48200);
+    sch(function(){hideCursor()},48500);
+
+    // ========== P4: 数据源管理 (49-76s) ==========
+    sch(function(){setChapter(4);showHint(4,'数据源管理')},49000);
+    sch(function(){showCursor();moveTo(navDS)},51500);
+    sch(function(){clickEl(navDS);setNav(navDS);topPage.textContent='🗄️ 数据源管理';tBadge.className='table-badge empty';tBadge.textContent='0 张表'},52300);
+    sch(function(){showSlide(7);document.getElementById('tListCount2').textContent='共 0 张表'},52600);
+    // 上传文件
+    sch(function(){moveTo(document.getElementById('dropzone2'))},53600);
+    sch(function(){clickEl(document.getElementById('dropzone2'));document.getElementById('dropzone2').classList.add('hl')},54400);
+    sch(function(){document.getElementById('parseBox2').style.display='block'},54600);
+    sch(function(){document.getElementById('parseBar2').style.width='30%';document.getElementById('parseText2').textContent='正在解析数据结构... 30%'},54800);
+    sch(function(){document.getElementById('parseBar2').style.width='65%';document.getElementById('parseText2').textContent='正在推断字段类型... 65%'},55300);
+    sch(function(){document.getElementById('parseBar2').style.width='100%';document.getElementById('parseText2').textContent='解析完成 ✓'},55800);
+    sch(function(){document.getElementById('parseBox2').style.display='none';document.getElementById('dropzone2').classList.remove('hl');document.getElementById('emptyRow2').style.display='none';document.getElementById('aiinRow').style.display='';tBadge.className='table-badge has';tBadge.textContent='1 张表';document.getElementById('tListCount2').textContent='共 1 张表'},56300);
+    // 点击"预览"
+    sch(function(){moveTo(document.getElementById('prevLink2'))},57300);
+    sch(function(){clickEl(document.getElementById('prevLink2'));document.getElementById('prevLink2').classList.add('hl')},58100);
+    sch(function(){openModal(previewModal2)},58400);
+    sch(function(){moveTo(document.getElementById('prevCancel2'))},59400);
+    sch(function(){clickEl(document.getElementById('prevCancel2'))},60000);
+    sch(function(){closeModal(previewModal2);document.getElementById('prevLink2').classList.remove('hl')},60300);
+    // 点击"编辑"
+    sch(function(){moveTo(document.getElementById('editLink2'))},61300);
+    sch(function(){clickEl(document.getElementById('editLink2'));document.getElementById('editLink2').classList.add('hl')},62100);
+    sch(function(){openModal(editTableModal2)},62400);
+    sch(function(){moveTo(editTblSave2)},63400);
+    sch(function(){clickEl(editTblSave2);editTblSave2.classList.add('hl')},64100);
+    sch(function(){closeModal(editTableModal2);editTblSave2.classList.remove('hl');document.getElementById('editLink2').classList.remove('hl');toast.textContent='保存成功';toast.classList.add('show')},64400);
+    sch(function(){toast.classList.remove('show')},65000);
+    // 点击"+ 手动添加表"
+    sch(function(){moveTo(document.getElementById('addBtn2'))},65500);
+    sch(function(){clickEl(document.getElementById('addBtn2'));document.getElementById('addBtn2').classList.add('hl')},66000);
+    sch(function(){openModal(addModal2)},66300);
+    // 填写表名
+    sch(function(){moveTo(document.getElementById('tnInput2'))},66900);
+    sch(function(){clickEl(document.getElementById('tnInput2'));document.getElementById('tnInput2').classList.add('hl')},67500);
+    sch(function(){typeInInput2(document.getElementById('tnInput2'),'sales_order',70)},67700);
+    // 填写别名
+    sch(function(){document.getElementById('tnInput2').classList.remove('hl');moveTo(document.getElementById('alInput2'))},68500);
+    sch(function(){clickEl(document.getElementById('alInput2'));document.getElementById('alInput2').classList.add('hl')},69100);
+    sch(function(){typeInInput2(document.getElementById('alInput2'),'销售订单表',80)},69300);
+    // 填写字段名
+    sch(function(){document.getElementById('alInput2').classList.remove('hl');moveTo(document.getElementById('fnInput2'))},70200);
+    sch(function(){clickEl(document.getElementById('fnInput2'));document.getElementById('fnInput2').classList.add('hl')},70800);
+    sch(function(){typeInInput2(document.getElementById('fnInput2'),'order_id',70)},71000);
+    // 填写字段描述
+    sch(function(){document.getElementById('fnInput2').classList.remove('hl');moveTo(document.getElementById('fdInput2'))},71800);
+    sch(function(){clickEl(document.getElementById('fdInput2'));document.getElementById('fdInput2').classList.add('hl')},72400);
+    sch(function(){typeInInput2(document.getElementById('fdInput2'),'订单编号',70)},72600);
+    // 保存
+    sch(function(){document.getElementById('fdInput2').classList.remove('hl');moveTo(document.getElementById('saveBtn2'))},73400);
+    sch(function(){clickEl(document.getElementById('saveBtn2'));document.getElementById('saveBtn2').classList.add('hl')},74000);
+    sch(function(){closeModal(addModal2);document.getElementById('saveBtn2').classList.remove('hl');document.getElementById('addBtn2').classList.remove('hl');showSlide(8);tBadge.textContent='2 张表'},74400);
+    sch(function(){toast.textContent='保存成功';toast.classList.add('show')},74600);
+    sch(function(){toast.classList.remove('show')},75500);
+    sch(function(){hideCursor()},75900);
+
+    // ========== P5: 数据字典 (76-90s) ==========
+    sch(function(){setChapter(5);showHint(5,'数据字典')},76200);
+    sch(function(){showCursor();moveTo(navDict)},78700);
+    sch(function(){clickEl(navDict);setNav(navDict);topPage.textContent='📖 数据字典';tBadge.className='table-badge has';tBadge.textContent='3 张表'},79500);
+    sch(function(){showSlide(9)},79800);
+    // 去查询
+    sch(function(){moveTo(document.getElementById('goQueryBtn2'))},80800);
+    sch(function(){clickEl(document.getElementById('goQueryBtn2'));document.getElementById('goQueryBtn2').classList.add('hl')},81600);
+    sch(function(){showSlide(10);setNav(navQuery);topPage.textContent='💬 新建查询';tBadge.className='table-badge empty';tBadge.textContent='0 张表';inputText.textContent='查询销售订单表的数据';inputPill.classList.add('hl')},81900);
+    sch(function(){inputTip.classList.add('show')},82400);
+    sch(function(){inputTip.classList.remove('show');inputPill.classList.remove('hl');moveTo(navDict)},83200);
+    // 编辑表结构
+    sch(function(){clickEl(navDict);setNav(navDict);topPage.textContent='📖 数据字典';tBadge.className='table-badge has';tBadge.textContent='3 张表';showSlide(9);inputText.textContent=defaultText},84000);
+    sch(function(){moveTo(document.getElementById('editBtn2'))},84500);
+    sch(function(){clickEl(document.getElementById('editBtn2'));document.getElementById('editBtn2').classList.add('hl')},85300);
+    sch(function(){openModal(editModal2)},85600);
+    sch(function(){moveTo(editSave2)},86300);
+    sch(function(){clickEl(editSave2);editSave2.classList.add('hl')},86900);
+    sch(function(){closeModal(editModal2);editSave2.classList.remove('hl');toast.textContent='保存成功';toast.classList.add('show')},87200);
+    sch(function(){toast.classList.remove('show')},87800);
+    // 管理数据源
+    sch(function(){moveTo(document.getElementById('mgrLink2'))},88300);
+    sch(function(){clickEl(document.getElementById('mgrLink2'));document.getElementById('mgrLink2').classList.add('hl')},89100);
+    sch(function(){setNav(navDS);topPage.textContent='🗄️ 数据源管理';document.getElementById('mgrLink2').classList.remove('hl');showSlide(7);document.getElementById('emptyRow2').style.display='none';document.getElementById('aiinRow').style.display='';document.getElementById('tListCount2').textContent='共 3 张表';tBadge.className='table-badge has';tBadge.textContent='3 张表'},89400);
+    sch(function(){hideCursor()},90000);
+
+    // ========== P6: 历史对话 + 新建对话 (90-105s) ==========
+    sch(function(){setChapter(6);showHint(6,'历史对话')},90400);
+    sch(function(){showCursor();moveTo(hist1)},92900);
+    sch(function(){hist1.classList.add('hl')},93500);
+    sch(function(){clickEl(hist1)},94200);
+    sch(function(){clearHistHL();hist1.classList.add('active');showSlide(11);topPage.textContent='💬 品类利润排名前5';setNav(navQuery)},94500);
+    sch(function(){moveTo(document.getElementById('execBtn2'))},95500);
+    sch(function(){clickEl(document.getElementById('execBtn2'));document.getElementById('execBtn2').classList.add('hl')},96300);
+    sch(function(){showSlide(12)},96600);
+    sch(function(){animateBars()},97000);
+    // 切换对话
+    sch(function(){moveTo(hist2)},98600);
+    sch(function(){hist2.classList.add('hl')},99200);
+    sch(function(){clickEl(hist2)},99900);
+    sch(function(){clearHistHL();hist1.classList.remove('active');hist2.classList.add('active');showSlide(12);topPage.textContent='💬 销售数量趋势分析'},100200);
+    sch(function(){animateBars()},100600);
+    // 新建对话
+    sch(function(){moveTo(newChatBtn)},101800);
+    sch(function(){newChatBtn.style.background='var(--brand-light)';newChatBtn.style.borderRadius='6px';newChatBtn.style.padding='2px 8px'},102400);
+    sch(function(){clickEl(newChatBtn)},102900);
+    sch(function(){clearHistHL();showSlide(13);topPage.textContent='💬 新建查询';tBadge.className='table-badge has';tBadge.textContent='3 张表';newChatBtn.style.background='';newChatBtn.style.padding='';newChatBtn.style.borderRadius='';inputText.textContent=defaultText;inputText.classList.remove('typed')},103200);
+    sch(function(){hideCursor()},104200);
+
+    // ========== End ==========
+    sch(function(){endOv.classList.add('show')},104700);
+  }
+
+  function restart(){run()}
+  window.restart=restart;
+  playBtn.addEventListener('click',function(){
+    if(playBtn.textContent==='↻'){restart();return}
+    if(playBtn.textContent==='⏸'){clr();playBtn.textContent='▶'}
+    else{restart()}
+  });
+  repBtn.addEventListener('click',restart);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='r'||e.key==='R'){restart()}
+    else if(e.key===' '){e.preventDefault();playBtn.click()}
+  });
+  sch(function(){run()},300);
+})();
+</script>
+
+
+</body></html>
